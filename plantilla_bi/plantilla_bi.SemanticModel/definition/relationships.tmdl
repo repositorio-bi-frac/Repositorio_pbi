@@ -1,0 +1,17 @@
+relationship d7e68e2a-b8f6-a092-8644-e0edbd30c9c3
+	fromColumn: Tabla_Combinada.id_status
+	toColumn: tb_dim_status.id_status
+
+relationship 48e7e736-f9dc-a3a9-4d99-3d7f12b55bb3
+	fromColumn: Tabla_Combinada.fecha_apertura_dia
+	toColumn: Calendario.Date
+
+relationship 7e03988f-8460-11ea-8c4f-5fe672057a45
+	isActive: false
+	fromColumn: Tabla_Combinada.fecha_cierre_dia
+	toColumn: Calendario.Date
+
+relationship 8789057a-25d4-7045-0bbe-4f8b57b1598c
+	fromColumn: Tabla_Combinada.assignee
+	toColumn: tb_dim_fte.assigne
+

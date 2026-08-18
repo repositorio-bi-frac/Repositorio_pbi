@@ -1,0 +1,302 @@
+cultureInfo en-US
+
+	linguisticMetadata =
+			{
+			  "Version": "2.0.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "tabla_combinada.incident_number": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "incident_number"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.assignee": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "assignee"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.fecha_y_hora_de_notificacion": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "fecha_y_hora_de_notificacion"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.categorization_tier_1": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "categorization_tier_1"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.categorization_tier_2": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "categorization_tier_2"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.categorization_tier_3": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "categorization_tier_3"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tb_dim_fte.grupo_soporte": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "tb_dim_fte",
+			          "ConceptualProperty": "grupo_soporte"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tb_dim_status.status": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "tb_dim_status",
+			          "ConceptualProperty": "status"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "ESTADO": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.nombremes": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "NombreMes"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "MES": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "medidas.ultima_actualizacion": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Ultima Actualizacion"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.assigned_group": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "assigned_group"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.description": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "description"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.contact_company": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "contact_company"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "medidas.q3": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Q3"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "medidas.q1": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Q1"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "medidas.q4": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Q4"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "medidas.q2": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Q2"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "medidas.q0": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Q0"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.submitter": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "submitter"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.tipo_definitivo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "tipo_definitivo"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.hora_solicitud": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "hora_solicitud"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tabla_combinada.tipo_caso_especialista": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "tipo_caso_especialista"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "medidas.abiertos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Abiertos"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "calendario.anio": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "Anio"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "AÑO": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.dia": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "Dia"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "DÍA": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "tabla_combinada.turno": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Tabla_Combinada",
+			          "ConceptualProperty": "turno"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "tb_dim_fte.assigne_normalizado": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "tb_dim_fte",
+			          "ConceptualProperty": "assigne_normalizado"
+			        }
+			      },
+			      "State": "Generated"
+			    }
+			  }
+			}
+		contentType: json
+

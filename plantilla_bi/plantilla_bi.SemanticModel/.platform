@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "plantilla_bi"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "b1a70000-2222-449d-a5f0-e2287353d001"
+  }
+}

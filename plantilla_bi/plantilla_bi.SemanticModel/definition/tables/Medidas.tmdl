@@ -1,0 +1,3678 @@
+table Medidas
+	lineageTag: medidas-table
+
+	measure Abiertos = DISTINCTCOUNT(Tabla_Combinada[incident_number])
+		formatString: 0
+		displayFolder: Calculos
+		lineageTag: a29c0bfb-cf7c-4eb6-adba-6c3df64d61c0
+
+	measure Aperturados = [Abiertos]
+		formatString: 0
+		displayFolder: Calculos
+		lineageTag: a01daece-5ba8-44d4-ba09-15f7b34b0be8
+
+	measure Cerrados = CALCULATE([Abiertos], USERELATIONSHIP(Calendario[Date], Tabla_Combinada[fecha_cierre_dia]))
+		formatString: 0
+		displayFolder: Calculos
+		lineageTag: 3fa54851-c1cf-4c72-ac5f-4a86c9661ddb
+
+	measure Balance = [Abiertos] - [Cerrados]
+		formatString: 0
+		displayFolder: Calculos
+		lineageTag: 6f83b55d-1016-49b2-8219-a37a2a325f95
+
+	measure RT_Balance =
+			CALCULATE(
+			    [Balance],
+			    FILTER(
+			        ALL(Calendario),
+			        Calendario[Date] <= MAX(Calendario[Date]) && NOT(ISBLANK(Calendario[Date]))
+			    )
+			)
+		formatString: 0
+		displayFolder: Calculos
+		lineageTag: 50e2e38d-ed30-4a53-8da4-2692b1dbdc0a
+
+	measure TITULO_SOC_VOLUMETRIA_GENERAL = "TABLERO DE VOLUMETRIA"
+		formatString: General
+		displayFolder: Titulos
+		lineageTag: c1753145-5a4c-49e0-bd1e-7bd9cf7b5241
+
+	measure 'Ultima Actualizacion' = MAX(Actualizacion[UltimaActualizacion])
+		formatString: General Date
+		displayFolder: Calculos
+		lineageTag: 8d6f4a2a-1c3f-4b5e-9a7d-2e5f8c1b9a3e
+
+	measure HTML_Volumetria_Apilado =
+			
+			/* ============================================================
+			   1. Meses visibles segun los filtros activos
+			   ============================================================ */
+			VAR __Categorias =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(
+			                Tabla_Combinada,
+			                Calendario[Anio],
+			                Calendario[Mes]
+			            ),
+			            "@Orden",
+			                Calendario[Anio] * 100 + Calendario[Mes],
+			            "@Etiqueta",
+			                SWITCH(
+			                    Calendario[Mes],
+			                    1, "ene",
+			                    2, "feb",
+			                    3, "mar",
+			                    4, "abr",
+			                    5, "may",
+			                    6, "jun",
+			                    7, "jul",
+			                    8, "ago",
+			                    9, "sep",
+			                    10, "oct",
+			                    11, "nov",
+			                    12, "dic",
+			                    ""
+			                )
+			                & " "
+			                & RIGHT(FORMAT(Calendario[Anio], "0000"), 2),
+			            "@Total",
+			                CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@Total] > 0
+			    )
+			
+			VAR __CantidadCategorias =
+			    COUNTROWS(__Categorias)
+			
+			VAR __Maximo =
+			    MAXX(__Categorias, [@Total])
+			
+			/* ============================================================
+			   2. Grupos visibles y colores (tokens DS_Color_Grupo_Oscuro / DS_Orden_Grupo)
+			   ============================================================ */
+			VAR __Grupos =
+			    FILTER(
+			        ADDCOLUMNS(
+			            VALUES(tb_dim_fte[grupo_soporte]),
+			
+			            "@GrupoTxt",
+			                VAR __Grupo = tb_dim_fte[grupo_soporte]
+			                RETURN
+			                    IF(ISBLANK(__Grupo) || __Grupo = "", "(Sin asignar)", __Grupo),
+			
+			            "@OrdenGrupo", [DS_Orden_Grupo],
+			
+			            "@Color", [DS_Color_Grupo_Oscuro],
+			
+			            "@ValorGrupo",
+			                CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@ValorGrupo] > 0
+			    )
+			
+			/* ============================================================
+			   3. Columnas apiladas
+			   ============================================================ */
+			VAR __ColumnasHTML =
+			    CONCATENATEX(
+			        __Categorias,
+			
+			        VAR __AnioActual = Calendario[Anio]
+			        VAR __MesActual = Calendario[Mes]
+			        VAR __TotalActual = [@Total]
+			        VAR __EtiquetaActual = [@Etiqueta]
+			
+			        VAR __AlturaBarraPx = MAX(4, DIVIDE(__TotalActual, MAX(__Maximo, 1), 0) * 90)
+			
+			        VAR __SegmentosHTML =
+			            CONCATENATEX(
+			                __Grupos,
+			
+			                VAR __GrupoActual = tb_dim_fte[grupo_soporte]
+			                VAR __GrupoTexto = [@GrupoTxt]
+			                VAR __ColorActual = [@Color]
+			
+			                VAR __ValorActual =
+			                    CALCULATE(
+			                        DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			                        KEEPFILTERS(TREATAS({ __AnioActual }, Calendario[Anio])),
+			                        KEEPFILTERS(TREATAS({ __MesActual }, Calendario[Mes])),
+			                        KEEPFILTERS(TREATAS({ __GrupoActual }, tb_dim_fte[grupo_soporte]))
+			                    )
+			
+			                VAR __SegmentoPct = MAX(0, DIVIDE(__ValorActual, MAX(__TotalActual, 1), 0) * 100)
+			
+			                RETURN
+			                    IF(
+			                        __ValorActual > 0,
+			
+			                        "<div"
+			                            & " title='"
+			                            & __EtiquetaActual
+			                            & " | "
+			                            & __GrupoTexto
+			                            & ": "
+			                            & FORMAT(__ValorActual, "#,0")
+			                            & "'"
+			                            & " style='"
+			                            & "width:100%;"
+				                            & "flex:" & FORMAT(__ValorActual, "0", "en-US") & " 1 0%;"
+				                            & "min-height:1px;"
+			                            & "background:"
+			                            & __ColorActual
+			                            & ";"
+			                            & "box-sizing:border-box;"
+			                            & "'>"
+			                            & "</div>",
+			
+			                        ""
+			                    ),
+			
+			                "",
+			                [@OrdenGrupo],
+			                DESC
+			            )
+			
+			        RETURN
+			            "<div style='"
+			                & "min-width:0;"
+			                & "height:100%;"
+			                & "display:flex;"
+			                & "flex-direction:column;"
+			                & "align-items:center;"
+			                & "box-sizing:border-box;"
+			                & "padding:0 7px;"
+			                & "'>"
+			
+			                & "<div style='"
+			                    & "position:relative;"
+			                    & "width:100%;"
+			                    & "flex:1 1 auto;min-height:0;"
+			                    & "display:flex;"
+			                    & "align-items:flex-end;"
+			                    & "justify-content:center;"
+			                    & "border-bottom:1px solid #DCE6F5;"
+			                    & "box-sizing:border-box;"
+			                    & "'>"
+			
+			                    & "<div style='"
+			                        & "position:absolute;"
+			                        & "bottom:calc(" & FORMAT(__AlturaBarraPx, "0", "en-US") & "px + 6px);"
+			                        & "left:50%;"
+			                        & "transform:translateX(-50%);"
+			                        & "font-size:10px;"
+			                        & "font-weight:600;"
+			                        & "color:#3D4D68;"
+			                        & "white-space:nowrap;"
+			                        & "'>"
+			                        & FORMAT(__TotalActual, "#,0")
+			                    & "</div>"
+			
+			                    & "<div style='"
+			                        & "width:86%;"
+			                        & "max-width:64px;"
+			                        & "min-width:18px;"
+			                        & "height:" & FORMAT(__AlturaBarraPx, "0", "en-US") & "px;" & "flex:0 0 " & FORMAT(__AlturaBarraPx, "0", "en-US") & "px;"
+			                        & "display:flex;"
+			                        & "flex-direction:column;"
+			                        & "justify-content:flex-end;"
+			                        & "overflow:hidden;"
+			                        & "border-radius:4px 4px 0 0;"
+			                        & "box-shadow:0 1px 2px rgba(15,45,104,0.12);"
+			                        & "box-sizing:border-box;"
+			                        & "'>"
+			                        & __SegmentosHTML
+			                    & "</div>"
+			
+			                & "</div>"
+			
+			                & "<div style='"
+			                    & "height:25px;"
+			                    & "padding-top:6px;"
+			                    & "box-sizing:border-box;"
+			                    & "font-size:10px;"
+			                    & "font-weight:500;"
+			                    & "color:#62708A;"
+			                    & "white-space:nowrap;"
+			                    & "text-align:center;"
+			                    & "'>"
+			                    & __EtiquetaActual
+			                & "</div>"
+			
+			            & "</div>",
+			
+			        "",
+			        [@Orden],
+			        ASC
+			    )
+			
+			/* ============================================================
+			   4. Leyenda
+			   ============================================================ */
+			VAR __LeyendaHTML =
+			    CONCATENATEX(
+			        __Grupos,
+			
+			        "<span style='"
+			            & "display:inline-flex;"
+			            & "align-items:center;"
+			            & "gap:6px;"
+			            & "margin-right:16px;"
+			            & "margin-bottom:3px;"
+			            & "font-size:11px;"
+			            & "color:#53627C;"
+			            & "white-space:nowrap;"
+			            & "'>"
+			
+			            & "<span style='"
+			                & "width:9px;"
+			                & "height:9px;"
+			                & "border-radius:3px;"
+			                & "background:"
+			                & [@Color]
+			                & ";"
+			                & "display:inline-block;"
+			                & "box-shadow:0 1px 2px rgba(0,0,0,0.10);"
+			                & "'>"
+			            & "</span>"
+			
+			            & [@GrupoTxt]
+			
+			        & "</span>",
+			
+			        "",
+			        [@OrdenGrupo],
+			        ASC
+			    )
+			
+			VAR __SinDatos =
+			    __CantidadCategorias = 0
+			        || ISBLANK(__Maximo)
+			        || __Maximo = 0
+			
+			VAR __AnchoInterno =
+			    IF(
+			        __CantidadCategorias <= 12,
+			        "100%",
+			        FORMAT(__CantidadCategorias * 68, "0") & "px"
+			    )
+			
+			VAR __ColumnasGrid =
+			    "repeat(" & FORMAT(__CantidadCategorias, "0") & ", minmax(" & IF(__CantidadCategorias <= 12, "0", "52px") & ", 1fr))"
+			
+			/* ============================================================
+			   5. Resultado final (usa tokens DS_Contenedor_Estilo / DS_Titulo_Estilo / DS_SinDatos_*)
+			   ============================================================ */
+			RETURN
+			    "<div style='"
+			        & "height:100%;"
+			        & "max-height:100%;"
+			        & [DS_Contenedor_Estilo]
+			        & "'>"
+			
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>"
+			            & "Volumetria"
+			            & IF(
+			                __CantidadCategorias > 12,
+			                " - " & FORMAT(__CantidadCategorias, "#,0") & " meses (desplazar para ver todos)",
+			                ""
+			            )
+			        & "</div>"
+			
+			        & IF(
+			            __SinDatos,
+			
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>"
+			                & [DS_SinDatos_Mensaje]
+			            & "</div>",
+			
+			            "<div style='"
+			                & "width:100%;"
+			                & "flex:1 1 auto;"
+			                & "min-height:0;"
+			                & "overflow-x:"
+			                & "auto"
+			                & ";"
+			                & "overflow-y:hidden;"
+			                & "box-sizing:border-box;"
+			                & "'>"
+			
+			                & "<div style='"
+			                    & "width:"
+			                    & __AnchoInterno
+			                    & ";"
+			                    & "height:100%;"
+			                    & "display:grid;"
+			                    & "grid-template-columns:"
+			                    & __ColumnasGrid
+			                    & ";"
+			                    & "align-items:end;"
+			                    & "column-gap:4px;"
+			                    & "box-sizing:border-box;"
+			                    & "'>"
+			
+			                    & __ColumnasHTML
+			
+			                & "</div>"
+			            & "</div>"
+			
+			            & "<div style='"
+			                & "display:flex;"
+			                & "align-items:center;"
+			                & "flex-wrap:wrap;"
+			                & "height:20px;"
+			                & "min-height:20px;"
+			                & "padding-top:2px;"
+			                & "border-top:1px solid #EEF3FA;"
+			                & "box-sizing:border-box;"
+			                & "overflow:hidden;"
+			                & "flex:0 0 26px;"
+			                & "'>"
+			                & __LeyendaHTML
+			            & "</div>"
+			        )
+			
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: b6f4e7c1-9a2d-4e3f-8c1b-7d5a9e2f4b6c
+
+	measure HTML_Volumetria_MatrizSoporte =
+			
+			
+			/* ============================================================
+			   1. Meses visibles segun los filtros activos (columnas)
+			   ============================================================ */
+			VAR __Meses =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(
+			                Tabla_Combinada,
+			                Calendario[Mes]
+			            ),
+			            "@EtiquetaMes",
+			                SWITCH(
+			                    Calendario[Mes],
+			                    1, "ene",
+			                    2, "feb",
+			                    3, "mar",
+			                    4, "abr",
+			                    5, "may",
+			                    6, "jun",
+			                    7, "jul",
+			                    8, "ago",
+			                    9, "sep",
+			                    10, "oct",
+			                    11, "nov",
+			                    12, "dic",
+			                    ""
+			                ),
+			            "@Total",
+			                CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@Total] > 0
+			    )
+			
+			VAR __CantidadMeses =
+			    COUNTROWS(__Meses)
+			
+			/* ============================================================
+			   2. Anios visibles (primer nivel de fila)
+			   ============================================================ */
+			VAR __Anios =
+			    FILTER(
+			        ADDCOLUMNS(
+			            VALUES(Calendario[Anio]),
+			            "@TotalAnio",
+			                CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@TotalAnio] > 0
+			    )
+			
+			VAR __SinDatos =
+			    COUNTROWS(__Anios) = 0
+			        || __CantidadMeses = 0
+			
+			/* ============================================================
+			   3. Encabezado de meses (fila fija, columnas de la matriz)
+			   ============================================================ */
+			VAR __EncabezadoHTML =
+			    "<div style='grid-column:1;position:sticky;top:0;left:0;z-index:3;background:#4A78F6;border-radius:4px 0 0 0;'></div>"
+			        & CONCATENATEX(
+			            __Meses,
+			            "<div style='"
+			                & "position:sticky;top:0;z-index:2;background:#4A78F6;color:#ffffff;"
+			                & "font-size:8px;font-weight:700;text-align:center;padding:3px 1px;"
+			                & "box-sizing:border-box;white-space:nowrap;overflow:hidden;'>"
+			                & [@EtiquetaMes]
+			            & "</div>",
+			            "",
+			            Calendario[Mes],
+			            ASC
+			        )
+			
+			/* ============================================================
+			   4. Filas: Anio > Grupo de Soporte > Rol (tokens DS_Orden_Grupo / DS_Color_Grupo_Pastel / DS_Color_Grupo_Claro)
+			   ============================================================ */
+			VAR __FilasHTML =
+			    CONCATENATEX(
+			        __Anios,
+			
+			        VAR __AnioActual = Calendario[Anio]
+			
+			        VAR __GruposDelAnio =
+			            FILTER(
+			                ADDCOLUMNS(
+			                    VALUES(tb_dim_fte[grupo_soporte]),
+			                    "@TotalGrupo",
+			                        CALCULATE(
+			                            DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			                            KEEPFILTERS(TREATAS({__AnioActual}, Calendario[Anio]))
+			                        ),
+			                    "@OrdenGrupo", [DS_Orden_Grupo],
+			                    "@ColorGrupo", [DS_Color_Grupo_Pastel],
+			                    "@ColorGrupoClaro", [DS_Color_Grupo_Claro]
+			                ),
+			                [@TotalGrupo] > 0
+			            )
+			
+			        VAR __FilaAnioHTML =
+			            "<div style='"
+			                & "grid-column:1 / -1;background:#3D63C9;color:#ffffff;"
+			                & "font-size:9px;font-weight:700;padding:3px 6px;margin-top:2px;"
+			                & "border-radius:3px;box-sizing:border-box;'>"
+			                & FORMAT(__AnioActual, "0000")
+			            & "</div>"
+			
+			        VAR __FilasGruposHTML =
+			            CONCATENATEX(
+			                __GruposDelAnio,
+			
+			                VAR __GrupoActual = tb_dim_fte[grupo_soporte]
+			                VAR __GrupoTexto =
+			                    IF(ISBLANK(__GrupoActual) || __GrupoActual = "", "(Sin asignar)", __GrupoActual)
+			                VAR __ColorGrupoActual = [@ColorGrupo]
+			                VAR __ColorGrupoClaroActual = [@ColorGrupoClaro]
+			
+			                VAR __CeldasGrupoHTML =
+			                    CONCATENATEX(
+			                        __Meses,
+			                        VAR __MesActual = Calendario[Mes]
+			                        VAR __ValorGrupoMes =
+			                            CALCULATE(
+			                                DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			                                KEEPFILTERS(TREATAS({__AnioActual}, Calendario[Anio])),
+			                                KEEPFILTERS(TREATAS({__GrupoActual}, tb_dim_fte[grupo_soporte])),
+			                                KEEPFILTERS(TREATAS({__MesActual}, Calendario[Mes]))
+			                            )
+			                        RETURN
+			                            "<div style='"
+			                                & "background:" & __ColorGrupoClaroActual & ";color:#12346C;"
+			                                & "font-size:9px;font-weight:700;text-align:center;padding:2px 2px;"
+			                                & "box-sizing:border-box;'>"
+			                                & IF(__ValorGrupoMes > 0, FORMAT(__ValorGrupoMes, "#,0"), "-")
+			                            & "</div>",
+			                        "",
+			                        Calendario[Mes],
+			                        ASC
+			                    )
+			
+			                VAR __FilaGrupoHTML =
+			                    "<div title='" & __GrupoTexto & "' style='"
+			                        & "background:" & __ColorGrupoActual & ";color:#12346C;"
+			                        & "font-size:10px;font-weight:700;padding:3px 6px;box-sizing:border-box;"
+			                        & "white-space:nowrap;'>"
+			                        & __GrupoTexto
+			                    & "</div>"
+			                    & __CeldasGrupoHTML
+			
+			                VAR __RolesDelGrupo =
+			                    FILTER(
+			                        ADDCOLUMNS(
+			                            VALUES(tb_dim_fte[rol]),
+			                            "@TotalRol",
+			                                CALCULATE(
+			                                    DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			                                    KEEPFILTERS(TREATAS({__AnioActual}, Calendario[Anio])),
+			                                    KEEPFILTERS(TREATAS({__GrupoActual}, tb_dim_fte[grupo_soporte]))
+			                                )
+			                        ),
+			                        [@TotalRol] > 0
+			                    )
+			
+			                VAR __FilasRolesHTML =
+			                    CONCATENATEX(
+			                        __RolesDelGrupo,
+			
+			                        VAR __RolActual = tb_dim_fte[rol]
+			                        VAR __RolTexto =
+			                            IF(ISBLANK(__RolActual) || __RolActual = "", "(Sin rol)", __RolActual)
+			
+			                        VAR __CeldasRolHTML =
+			                            CONCATENATEX(
+			                                __Meses,
+			                                VAR __MesActual2 = Calendario[Mes]
+			                                VAR __ValorRolMes =
+			                                    CALCULATE(
+			                                        DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			                                        KEEPFILTERS(TREATAS({__AnioActual}, Calendario[Anio])),
+			                                        KEEPFILTERS(TREATAS({__GrupoActual}, tb_dim_fte[grupo_soporte])),
+			                                        KEEPFILTERS(TREATAS({__RolActual}, tb_dim_fte[rol])),
+			                                        KEEPFILTERS(TREATAS({__MesActual2}, Calendario[Mes]))
+			                                    )
+			                                RETURN
+			                                    "<div style='"
+			                                        & "background:#F5F7FB;color:#33415C;font-size:9px;font-weight:600;"
+			                                        & "text-align:center;padding:2px 2px;box-sizing:border-box;"
+			                                        & "border-bottom:1px solid #EEF3FA;'>"
+			                                        & IF(__ValorRolMes > 0, FORMAT(__ValorRolMes, "#,0"), "-")
+			                                    & "</div>",
+			                                "",
+			                                Calendario[Mes],
+			                                ASC
+			                            )
+			
+			                        RETURN
+			                            "<div title='" & __RolTexto & "' style='"
+			                                & "background:#F5F7FB;color:#33415C;font-size:9px;font-weight:600;"
+			                                & "padding:2px 6px 2px 12px;box-sizing:border-box;white-space:nowrap;"
+			                                & "border-bottom:1px solid #EEF3FA;'>"
+			                                & __RolTexto
+			                            & "</div>"
+			                            & __CeldasRolHTML,
+			
+			                        "",
+			                        tb_dim_fte[rol],
+			                        ASC
+			                    )
+			
+			                RETURN
+			                    __FilaGrupoHTML & __FilasRolesHTML,
+			
+			                "",
+			                [@OrdenGrupo],
+			                ASC
+			            )
+			
+			        RETURN
+			            __FilaAnioHTML & __FilasGruposHTML,
+			
+			        "",
+			        Calendario[Anio],
+			        DESC
+			    )
+			
+			/* ============================================================
+			   5. Resultado final (usa tokens DS_Contenedor_Estilo / DS_Titulo_Estilo / DS_SinDatos_*)
+			   ============================================================ */
+			RETURN
+			    "<div style='"
+			        & "height:100%;"
+			        & "max-height:100%;"
+			        & [DS_Contenedor_Estilo]
+			        & "'>"
+			
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>"
+			            & "Grupo de Soporte"
+			        & "</div>"
+			
+			        & IF(
+			            __SinDatos,
+			
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>"
+			                & [DS_SinDatos_Mensaje]
+			            & "</div>",
+			
+			            "<div style='flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:auto;box-sizing:border-box;'>"
+			                & "<div style='"
+			                    & "display:grid;min-width:max-content;"
+			                    & "grid-template-columns:max-content repeat(" & FORMAT(__CantidadMeses, "0") & ", minmax(22px,1fr));"
+			                    & "column-gap:2px;row-gap:2px;width:100%;box-sizing:border-box;'>"
+			                    & __EncabezadoHTML
+			                    & __FilasHTML
+			                & "</div>"
+			            & "</div>"
+			        )
+			
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: e9219c77-1c9c-4e2e-9699-d2ec5275b868
+
+	measure HTML_Volumetria_MatrizAgentes =
+			
+			
+			VAR __Meses =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(
+			                Tabla_Combinada,
+			                Calendario[Mes]
+			            ),
+			            "@EtiquetaMes",
+			                SWITCH(
+			                    Calendario[Mes],
+			                    1, "ene",
+			                    2, "feb",
+			                    3, "mar",
+			                    4, "abr",
+			                    5, "may",
+			                    6, "jun",
+			                    7, "jul",
+			                    8, "ago",
+			                    9, "sep",
+			                    10, "oct",
+			                    11, "nov",
+			                    12, "dic",
+			                    ""
+			                ),
+			            "@Total",
+			                CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@Total] > 0
+			    )
+			
+			VAR __CantidadMeses =
+			    COUNTROWS(__Meses)
+			
+			VAR __Agentes =
+			    FILTER(
+			        ADDCOLUMNS(
+			            VALUES(tb_dim_fte[assigne_normalizado]),
+			            "@TotalAgente",
+			                CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number])),
+			            "@ColorGrupo", [DS_Color_Grupo_Oscuro]
+			        ),
+			        [@TotalAgente] > 0
+			    )
+			
+			VAR __SinDatos =
+			    COUNTROWS(__Agentes) = 0
+			        || __CantidadMeses = 0
+			
+			VAR __EncabezadoHTML =
+			    "<div style='grid-column:1;position:sticky;top:0;left:0;z-index:3;background:#FAFBFD;'></div>"
+			        & CONCATENATEX(
+			            __Meses,
+			            "<div style='"
+			                & "position:sticky;top:0;z-index:2;background:#FAFBFD;color:#5B6B8C;"
+			                & "font-size:9px;font-weight:700;text-align:center;padding:3px 1px;"
+			                & "border-bottom:1px solid #DCE6F5;box-sizing:border-box;white-space:nowrap;'>"
+			                & [@EtiquetaMes]
+			            & "</div>",
+			            "",
+			            Calendario[Mes],
+			            ASC
+			        )
+			
+			VAR __FilasHTML =
+			    CONCATENATEX(
+			        __Agentes,
+			
+			        VAR __AgenteActual = tb_dim_fte[assigne_normalizado]
+			        VAR __AgenteTexto =
+			            IF(ISBLANK(__AgenteActual) || __AgenteActual = "", "(Sin asignar)", __AgenteActual)
+			        VAR __ColorActual = [@ColorGrupo]
+			
+			        VAR __CeldasHTML =
+			            CONCATENATEX(
+			                __Meses,
+			                VAR __MesActual = Calendario[Mes]
+			                VAR __ValorCelda =
+			                    CALCULATE(
+			                        DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			                        KEEPFILTERS(TREATAS({__AgenteActual}, tb_dim_fte[assigne_normalizado])),
+			                        KEEPFILTERS(TREATAS({__MesActual}, Calendario[Mes]))
+			                    )
+			                RETURN
+			                    "<div style='"
+			                        & "color:#33415C;font-size:10px;font-weight:600;text-align:center;padding:2px 4px;"
+			                        & "border-bottom:1px solid #EEF3FA;box-sizing:border-box;'>"
+			                        & IF(__ValorCelda > 0, FORMAT(__ValorCelda, "#,0"), "-")
+			                    & "</div>",
+			                "",
+			                Calendario[Mes],
+			                ASC
+			            )
+			
+			        RETURN
+			            "<div style='"
+			                & "border-left:2px solid " & __ColorActual & ";color:#3D4D68;"
+			                & "font-size:10px;padding:2px 10px 2px 8px;box-sizing:border-box;"
+			                & "border-bottom:1px solid #EEF3FA;white-space:nowrap;'>"
+			                & __AgenteTexto
+			            & "</div>"
+			            & __CeldasHTML,
+			
+			        "",
+			        [@TotalAgente],
+			        DESC
+			    )
+			
+			RETURN
+			    "<div style='"
+			        & "height:100%;"
+			        & "max-height:100%;"
+			        & [DS_Contenedor_Estilo]
+			        & "'>"
+			
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>"
+			            & "Agente"
+			        & "</div>"
+			
+			        & IF(
+			            __SinDatos,
+			
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>"
+			                & [DS_SinDatos_Mensaje]
+			            & "</div>",
+			
+			            "<div style='flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:auto;box-sizing:border-box;'>"
+			                & "<div style='"
+			                    & "display:grid;"
+			                    & "grid-template-columns:max-content repeat(" & FORMAT(__CantidadMeses, "0") & ", minmax(28px,1fr));"
+			                    & "column-gap:2px;width:100%;box-sizing:border-box;'>"
+			                    & __EncabezadoHTML
+			                    & __FilasHTML
+			                & "</div>"
+			            & "</div>"
+			        )
+			
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: 085b48f0-19e5-4f70-a3ff-c72596c11531
+
+	measure DS_Fuente = "font-family:Segoe UI,Arial,sans-serif;"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0001-4a11-9a11-000000000001
+
+	measure DS_Color_Borde = "#1E4FAF"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0002-4a11-9a11-000000000002
+
+	measure DS_Color_TituloTexto = "#12346C"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0003-4a11-9a11-000000000003
+
+	measure DS_Color_TextoSecundario = "#5B6B8C"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0004-4a11-9a11-000000000004
+
+	measure DS_Color_Divisor = "#EEF3FA"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0005-4a11-9a11-000000000005
+
+	measure DS_Sombra = "box-shadow:4px 4px 10px rgba(30,79,175,0.18);"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0006-4a11-9a11-000000000006
+
+	measure DS_Contenedor_Estilo =
+			[DS_Fuente]
+				& "width:100%;box-sizing:border-box;background:transparent;border:1px solid "
+				& [DS_Color_Borde]
+				& ";border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;overflow:hidden;"
+				& [DS_Sombra]
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0007-4a11-9a11-000000000007
+
+	measure DS_Titulo_Estilo =
+			"font-size:12px;font-weight:700;color:"
+				& [DS_Color_TituloTexto]
+				& ";height:20px;line-height:20px;margin-bottom:2px;flex:0 0 20px;"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0008-4a11-9a11-000000000008
+
+	measure DS_SinDatos_Estilo = "flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#8090AA;text-align:center;"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0009-4a11-9a11-000000000009
+
+	measure DS_SinDatos_Mensaje = "No existen datos para los filtros seleccionados"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0010-4a11-9a11-000000000010
+
+	measure DS_Color_Grupo_Oscuro =
+			VAR __Grupo = SELECTEDVALUE(tb_dim_fte[grupo_soporte])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        __Grupo = "ESPECIALISTAS", "#214FAE",
+			        __Grupo = "OPERACIONES SOC", "#4A78F6",
+			        __Grupo = "SOPORTE SOC", "#1198A5",
+			        "#94A3B8"
+			    )
+		displayFolder: Diseno HTML\Tokens\Grupo de Soporte
+		lineageTag: 1a2b3c4d-0011-4a11-9a11-000000000011
+
+	measure DS_Color_Grupo_Pastel =
+			VAR __Grupo = SELECTEDVALUE(tb_dim_fte[grupo_soporte])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        __Grupo = "ESPECIALISTAS", "#B7C6EE",
+			        __Grupo = "OPERACIONES SOC", "#C3D6FC",
+			        __Grupo = "SOPORTE SOC", "#B7E6EA",
+			        "#D7DCE6"
+			    )
+		displayFolder: Diseno HTML\Tokens\Grupo de Soporte
+		lineageTag: 1a2b3c4d-0012-4a11-9a11-000000000012
+
+	measure DS_Color_Grupo_Claro =
+			VAR __Grupo = SELECTEDVALUE(tb_dim_fte[grupo_soporte])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        __Grupo = "ESPECIALISTAS", "#DCE4F7",
+			        __Grupo = "OPERACIONES SOC", "#E4ECFF",
+			        __Grupo = "SOPORTE SOC", "#DFF3F5",
+			        "#EEF1F5"
+			    )
+		displayFolder: Diseno HTML\Tokens\Grupo de Soporte
+		lineageTag: 1a2b3c4d-0013-4a11-9a11-000000000013
+
+	measure DS_Orden_Grupo =
+			VAR __Grupo = SELECTEDVALUE(tb_dim_fte[grupo_soporte])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        __Grupo = "ESPECIALISTAS", 1,
+			        __Grupo = "OPERACIONES SOC", 2,
+			        __Grupo = "SOPORTE SOC", 3,
+			        ISBLANK(__Grupo) || __Grupo = "", 4,
+			        5
+			    )
+		displayFolder: Diseno HTML\Tokens\Grupo de Soporte
+		lineageTag: 1a2b3c4d-0014-4a11-9a11-000000000014
+
+	measure DS_KPI_Tile_Estilo = "background-color:rgba(255,255,255,0.8);border:1px solid #1E4FAF;border-radius:6px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;padding:4px;gap:2px;"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 0f29d453-c27b-469a-bcf3-d28cc08bdc66
+
+	measure DS_KPI_Header_Estilo = "display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 9c3d2f11-0001-4e22-8a22-200000000001
+
+	measure DS_KPI_Label_Estilo =
+			"font-size:9px;color:"
+				& [DS_Color_TituloTexto]
+				& ";text-align:center;white-space:nowrap;"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 5ad1c4e6-3bcb-4e3e-b713-f6ca007c2eea
+
+	measure DS_KPI_Valor_Estilo =
+			"font-size:16px;font-weight:700;color:"
+				& [DS_Color_TituloTexto]
+				& ";text-align:center;white-space:nowrap;"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 76ab7362-64f9-49ec-8c07-8507fd4d1f4d
+
+	measure DS_Icono_EnGestion = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' style='flex-shrink:0;'><path d='M3 12h4l2 3h6l2-3h4' stroke='#1E4FAF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 12V6a1 1 0 011-1h16a1 1 0 011 1v6' stroke='#1E4FAF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 12v6a1 1 0 001 1h16a1 1 0 001-1v-6' stroke='#1E4FAF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: a1b2c3d4-0001-4e11-9a11-100000000001
+
+	measure DS_Icono_Actualizacion = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' style='flex-shrink:0;'><circle cx='12' cy='12' r='9' stroke='#1E4FAF' stroke-width='2'/><path d='M12 7v5l3.5 2' stroke='#1E4FAF' stroke-width='2' stroke-linecap='round'/></svg>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: a1b2c3d4-0006-4e11-9a11-100000000006
+
+	measure HTML_Backlog_KPI_EnGestion =
+			/// COMPONENTE DE CATALOGO: Tarjeta KPI por estado.
+			/// Para reutilizarlo solo se cambia __Estado por el literal del modelo destino.
+			/// La etiqueta y el icono se resuelven automaticamente.
+			VAR __Estado = "Progreso"
+			VAR __Etiqueta =
+			    SWITCH(
+			        __Estado,
+			        "Progreso", "En curso",
+			        "Asignado", "Asignado",
+			        "Pendiente", "Pendiente",
+			        "Cerrado", "Cerrado",
+			        "Cancelado", "Cancelado",
+			        __Estado
+			    )
+			VAR __Icono =
+			    SWITCH(
+			        __Estado,
+			        "Progreso", [DS_Icono_EnCurso],
+			        "Asignado", [DS_Icono_Asignado],
+			        "Pendiente", [DS_Icono_Pendiente],
+			        "Cerrado", [DS_Icono_Cerrado],
+			        "Cancelado", [DS_Icono_Cancelado],
+			        [DS_Icono_EnGestion]
+			    )
+			VAR __Valor =
+			    CALCULATE(
+			        DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			        REMOVEFILTERS(tb_dim_status[status]),
+			        TREATAS({ __Estado }, tb_dim_status[status])
+			    )
+			RETURN
+			    "<div style='" & [DS_KPI_Tile_Estilo] & "'>"
+			        & "<div style='" & [DS_KPI_Header_Estilo] & "'>"
+			            & __Icono
+			            & "<div style='" & [DS_KPI_Label_Estilo] & "'>" & __Etiqueta & "</div>"
+			        & "</div>"
+			        & "<div style='" & [DS_KPI_Valor_Estilo] & "'>" & FORMAT(COALESCE(__Valor, 0), "#,0") & "</div>"
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: 1a893339-e477-4703-862a-50f90fe6755d
+
+	measure HTML_UltimaActualizacion =
+			VAR __Fecha = [Ultima Actualizacion]
+			RETURN
+			    "<div style='" & [DS_KPI_Tile_Estilo] & "'>"
+			        & "<div style='" & [DS_KPI_Header_Estilo] & "'>"
+			            & [DS_Icono_Actualizacion]
+			            & "<div style='" & [DS_KPI_Label_Estilo] & "'>Fecha Actualizacion</div>"
+			        & "</div>"
+			        & "<div style='font-size:12px;font-weight:700;color:" & [DS_Color_TituloTexto] & ";text-align:center;white-space:nowrap;'>"
+			            & IF(ISBLANK(__Fecha), "-", FORMAT(__Fecha, "dd/mm/yyyy HH:mm"))
+			        & "</div>"
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: ddf25d34-b9ae-42aa-b5b0-04878e844f52
+
+	measure HTML_Backlog_Barras_AgenteEstado =
+			
+			
+			/* ============================================================
+			   1. Estados visibles, con orden y color
+			   ============================================================ */
+			VAR __EstadosBase =
+			    FILTER(
+			        ADDCOLUMNS(
+			            VALUES(tb_dim_status[status]),
+			            "@TotalEstado", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@TotalEstado] > 0
+			    )
+			
+			VAR __Estados =
+			    ADDCOLUMNS(
+			        __EstadosBase,
+			
+			        "@Orden",
+			            VAR __TotalActual = [@TotalEstado]
+			            VAR __EstadoActual = tb_dim_status[status]
+			            RETURN
+			                COUNTROWS(
+			                    FILTER(
+			                        __EstadosBase,
+			                        [@TotalEstado] > __TotalActual
+			                            || ([@TotalEstado] = __TotalActual && tb_dim_status[status] < __EstadoActual)
+			                    )
+			                ) + 1,
+			
+			        "@Color",
+			            VAR __TotalActual = [@TotalEstado]
+			            VAR __EstadoActual = tb_dim_status[status]
+			            VAR __OrdenActual =
+			                COUNTROWS(
+			                    FILTER(
+			                        __EstadosBase,
+			                        [@TotalEstado] > __TotalActual
+			                            || ([@TotalEstado] = __TotalActual && tb_dim_status[status] < __EstadoActual)
+			                    )
+			                ) + 1
+			            RETURN
+			                SWITCH(
+			                    MOD(__OrdenActual - 1, 8),
+			                    0, "#1E4FAF", 1, "#4A78F6", 2, "#1198A5", 3, "#7B93D6",
+			                    4, "#8FADF9", 5, "#5FC2CE", 6, "#2F5FC4", "#94A3B8"
+			                )
+			    )
+			
+			/* ============================================================
+			   2. Agentes visibles
+			   ============================================================ */
+			VAR __AgentesBase =
+			    FILTER(
+			        ADDCOLUMNS(
+			            VALUES(tb_dim_fte[assigne_normalizado]),
+			            "@TotalAgente", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@TotalAgente] > 0
+			    )
+			
+			VAR __CantidadAgentes =
+			    COUNTROWS(__AgentesBase)
+			
+			VAR __SinDatos =
+			    __CantidadAgentes = 0
+			
+			VAR __MaxTotal =
+			    MAXX(__AgentesBase, [@TotalAgente])
+			
+			/* ============================================================
+			   3. Celdas de la grilla: nombre | barra apilada | total
+			      (3 celdas por agente; el grid alinea las columnas y la
+			      columna de nombres se dimensiona al nombre mas largo)
+			   ============================================================ */
+			VAR __FilasHTML =
+			    CONCATENATEX(
+			        __AgentesBase,
+			
+			        VAR __AgenteActual = tb_dim_fte[assigne_normalizado]
+			        VAR __TotalActual = [@TotalAgente]
+			        VAR __AgenteTexto =
+			            IF(ISBLANK(__AgenteActual) || __AgenteActual = "", "(Sin asignar)", __AgenteActual)
+			
+			        VAR __SegmentosHTML =
+			            CONCATENATEX(
+			                __Estados,
+			
+			                VAR __EstadoActual = tb_dim_status[status]
+			                VAR __ColorActual = [@Color]
+			                VAR __Valor =
+			                    CALCULATE(
+			                        DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			                        KEEPFILTERS(TREATAS({__AgenteActual}, tb_dim_fte[assigne_normalizado])),
+			                        KEEPFILTERS(TREATAS({__EstadoActual}, tb_dim_status[status]))
+			                    )
+			                VAR __AnchoPct =
+			                    DIVIDE(__Valor, MAX(__MaxTotal, 1), 0) * 100
+			
+			                RETURN
+			                    IF(
+			                        __Valor > 0,
+			                        "<div title='" & __AgenteTexto & " | " & __EstadoActual & ": " & FORMAT(__Valor, "#,0") & "'"
+			                            & " style='width:" & FORMAT(__AnchoPct, "0.00", "en-US") & "%;"
+			                            & "height:100%;background:" & __ColorActual & ";box-sizing:border-box;'>"
+			                            & "</div>",
+			                        ""
+			                    ),
+			
+			                "",
+			                [@Orden],
+			                ASC
+			            )
+			
+			        RETURN
+			            "<div title='" & __AgenteTexto & "'"
+			                & " style='font-size:8px;color:#3D4D68;white-space:nowrap;"
+			                & "overflow:hidden;text-overflow:ellipsis;text-align:right;'>"
+			                & __AgenteTexto
+			            & "</div>"
+			
+			            & "<div style='height:11px;display:flex;flex-direction:row;min-width:0;"
+			                & "background:#F1F4FA;border-radius:2px;overflow:hidden;'>"
+			                & __SegmentosHTML
+			            & "</div>"
+			
+			            & "<div style='font-size:8px;font-weight:700;color:#12346C;text-align:right;white-space:nowrap;'>"
+			                & FORMAT(__TotalActual, "#,0")
+			            & "</div>",
+			
+			        "",
+			        [@TotalAgente],
+			        DESC
+			    )
+			
+			/* ============================================================
+			   4. Leyenda
+			   ============================================================ */
+			VAR __LeyendaHTML =
+			    CONCATENATEX(
+			        __Estados,
+			        VAR __EtiquetaActual =
+			            IF(ISBLANK(tb_dim_status[status]) || tb_dim_status[status] = "", "(Sin estado)", tb_dim_status[status])
+			        RETURN
+			            "<span style='display:inline-flex;align-items:center;gap:4px;margin-right:8px;font-size:8px;color:#53627C;white-space:nowrap;'>"
+			                & "<span style='width:7px;height:7px;border-radius:2px;background:" & [@Color] & ";display:inline-block;'></span>"
+			                & __EtiquetaActual
+			            & "</span>",
+			        "",
+			        [@Orden],
+			        ASC
+			    )
+			
+			RETURN
+			    "<div style='"
+			        & "height:100%;"
+			        & "max-height:100%;"
+			        & [DS_Contenedor_Estilo]
+			        & "'>"
+			
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>Casos por Agente y Estado</div>"
+			
+			        & IF(
+			            __SinDatos,
+			
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			
+			            "<div style='flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;'>"
+			
+			                & "<div style='flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;padding-right:2px;'>"
+			                    & "<div style='display:grid;"
+			                        & "grid-template-columns:fit-content(120px) minmax(50px,1fr) max-content;"
+			                        & "column-gap:5px;row-gap:3px;align-items:center;width:100%;box-sizing:border-box;'>"
+			                        & __FilasHTML
+			                    & "</div>"
+			                & "</div>"
+			
+			                & "<div style='display:flex;align-items:center;justify-content:center;flex-wrap:wrap;"
+			                    & "height:18px;min-height:18px;overflow:hidden;padding-top:2px;"
+			                    & "border-top:1px solid #EEF3FA;box-sizing:border-box;'>"
+			                    & __LeyendaHTML
+			                & "</div>"
+			
+			            & "</div>"
+			        )
+			
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: b2c3d4e5-0003-4f33-9b33-300000000003
+
+	measure HTML_Backlog_Lineas_Balance =
+			
+			VAR __AnchoSVG = 460
+			VAR __AltoSVG = 138
+			
+			VAR __MargenX = 24
+			VAR __MargenSuperior = 16
+			VAR __MargenInferior = 12
+			
+			VAR __AnchoPlot =
+			    __AnchoSVG - (__MargenX * 2)
+			
+			VAR __AltoPlot =
+			    __AltoSVG - __MargenSuperior - __MargenInferior
+			
+			/* ============================================================
+			   1. Datos por año y mes
+			   ============================================================ */
+			VAR __CategoriasBase =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(
+			                Tabla_Combinada,
+			                Calendario[Anio],
+			                Calendario[Mes]
+			            ),
+			
+			            "@Orden",
+			                Calendario[Anio] * 100
+			                    + Calendario[Mes],
+			
+			            "@Etiqueta",
+			                SWITCH(
+			                    Calendario[Mes],
+			                    1, "ene",
+			                    2, "feb",
+			                    3, "mar",
+			                    4, "abr",
+			                    5, "may",
+			                    6, "jun",
+			                    7, "jul",
+			                    8, "ago",
+			                    9, "sep",
+			                    10, "oct",
+			                    11, "nov",
+			                    12, "dic",
+			                    ""
+			                )
+			                    & " "
+			                    & RIGHT(
+			                        FORMAT(
+			                            Calendario[Anio],
+			                            "0000"
+			                        ),
+			                        2
+			                    ),
+			
+			            "@Aperturados",
+			                CALCULATE([Aperturados]),
+			
+			            "@Balance",
+			                CALCULATE([Balance]),
+			
+			            "@Cerrados",
+			                CALCULATE([Cerrados])
+			        ),
+			
+			        NOT(
+			            ISBLANK([@Aperturados])
+			                && ISBLANK([@Balance])
+			                && ISBLANK([@Cerrados])
+			        )
+			    )
+			
+			VAR __Categorias =
+			    ADDCOLUMNS(
+			        __CategoriasBase,
+			
+			        "@Indice",
+			            VAR __OrdenActual = [@Orden]
+			            RETURN
+			                COUNTROWS(
+			                    FILTER(
+			                        __CategoriasBase,
+			                        [@Orden] < __OrdenActual
+			                    )
+			                )
+			    )
+			
+			VAR __CantidadCategorias =
+			    COUNTROWS(__Categorias)
+			
+			VAR __SinDatos =
+			    __CantidadCategorias = 0
+			
+			/* ============================================================
+			   2. Máximo y mínimo del gráfico
+			   Se consideran solo valores no vacíos.
+			   ============================================================ */
+			VAR __ValoresSeries =
+			    UNION(
+			        SELECTCOLUMNS(
+			            FILTER(
+			                __Categorias,
+			                NOT ISBLANK([@Aperturados])
+			            ),
+			            "@Valor", [@Aperturados]
+			        ),
+			        SELECTCOLUMNS(
+			            FILTER(
+			                __Categorias,
+			                NOT ISBLANK([@Balance])
+			            ),
+			            "@Valor", [@Balance]
+			        ),
+			        SELECTCOLUMNS(
+			            FILTER(
+			                __Categorias,
+			                NOT ISBLANK([@Cerrados])
+			            ),
+			            "@Valor", [@Cerrados]
+			        )
+			    )
+			
+			VAR __MaxVal =
+			    MAXX(
+			        __ValoresSeries,
+			        [@Valor]
+			    )
+			
+			VAR __MinVal =
+			    MINX(
+			        __ValoresSeries,
+			        [@Valor]
+			    )
+			
+			VAR __MaxEscala =
+			    MAX(
+			        COALESCE(__MaxVal, 0),
+			        0
+			    )
+			
+			VAR __MinEscala =
+			    MIN(
+			        COALESCE(__MinVal, 0),
+			        0
+			    )
+			
+			VAR __Rango =
+			    MAX(
+			        __MaxEscala - __MinEscala,
+			        1
+			    )
+			
+			/* ============================================================
+			   3. Coordenada X común
+			   ============================================================ */
+			VAR __SeparacionX =
+			    IF(
+			        __CantidadCategorias > 1,
+			        DIVIDE(
+			            __AnchoPlot,
+			            __CantidadCategorias - 1,
+			            0
+			        ),
+			        0
+			    )
+			
+			/* ============================================================
+			   4. Puntos de Aperturados
+			   ============================================================ */
+			VAR __PuntosAperturados =
+			    CONCATENATEX(
+			        FILTER(
+			            __Categorias,
+			            NOT ISBLANK([@Aperturados])
+			        ),
+			
+			        VAR __Indice = [@Indice]
+			
+			        VAR __X =
+			            IF(
+			                __CantidadCategorias > 1,
+			                __MargenX + (__Indice * __SeparacionX),
+			                __AnchoSVG / 2
+			            )
+			
+			        VAR __Y =
+			            __MargenSuperior
+			                + __AltoPlot
+			                - DIVIDE(
+			                    [@Aperturados] - __MinEscala,
+			                    __Rango,
+			                    0
+			                ) * __AltoPlot
+			
+			        RETURN
+			            FORMAT(__X, "0.00", "en-US")
+			                & ","
+			                & FORMAT(__Y, "0.00", "en-US"),
+			
+			        " ",
+			        [@Indice],
+			        ASC
+			    )
+			
+			/* ============================================================
+			   5. Puntos de Balance
+			   ============================================================ */
+			VAR __PuntosBalance =
+			    CONCATENATEX(
+			        FILTER(
+			            __Categorias,
+			            NOT ISBLANK([@Balance])
+			        ),
+			
+			        VAR __Indice = [@Indice]
+			
+			        VAR __X =
+			            IF(
+			                __CantidadCategorias > 1,
+			                __MargenX + (__Indice * __SeparacionX),
+			                __AnchoSVG / 2
+			            )
+			
+			        VAR __Y =
+			            __MargenSuperior
+			                + __AltoPlot
+			                - DIVIDE(
+			                    [@Balance] - __MinEscala,
+			                    __Rango,
+			                    0
+			                ) * __AltoPlot
+			
+			        RETURN
+			            FORMAT(__X, "0.00", "en-US")
+			                & ","
+			                & FORMAT(__Y, "0.00", "en-US"),
+			
+			        " ",
+			        [@Indice],
+			        ASC
+			    )
+			
+			/* ============================================================
+			   6. Puntos de Cerrados
+			   ============================================================ */
+			VAR __PuntosCerrados =
+			    CONCATENATEX(
+			        FILTER(
+			            __Categorias,
+			            NOT ISBLANK([@Cerrados])
+			        ),
+			
+			        VAR __Indice = [@Indice]
+			
+			        VAR __X =
+			            IF(
+			                __CantidadCategorias > 1,
+			                __MargenX + (__Indice * __SeparacionX),
+			                __AnchoSVG / 2
+			            )
+			
+			        VAR __Y =
+			            __MargenSuperior
+			                + __AltoPlot
+			                - DIVIDE(
+			                    [@Cerrados] - __MinEscala,
+			                    __Rango,
+			                    0
+			                ) * __AltoPlot
+			
+			        RETURN
+			            FORMAT(__X, "0.00", "en-US")
+			                & ","
+			                & FORMAT(__Y, "0.00", "en-US"),
+			
+			        " ",
+			        [@Indice],
+			        ASC
+			    )
+			
+			/* ============================================================
+			   7. Marcadores y etiquetas de Aperturados
+			   ============================================================ */
+			VAR __MarcadoresAperturados =
+			    CONCATENATEX(
+			        FILTER(
+			            __Categorias,
+			            NOT ISBLANK([@Aperturados])
+			        ),
+			
+			        VAR __Indice = [@Indice]
+			        VAR __Valor = [@Aperturados]
+			
+			        VAR __X =
+			            IF(
+			                __CantidadCategorias > 1,
+			                __MargenX + (__Indice * __SeparacionX),
+			                __AnchoSVG / 2
+			            )
+			
+			        VAR __Y =
+			            __MargenSuperior
+			                + __AltoPlot
+			                - DIVIDE(
+			                    __Valor - __MinEscala,
+			                    __Rango,
+			                    0
+			                ) * __AltoPlot
+			
+			        RETURN
+			            "<circle"
+			                & " cx='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                & " cy='" & FORMAT(__Y, "0.00", "en-US") & "'"
+			                & " r='4'"
+			                & " fill='#4A78F6'"
+			                & " stroke='#FFFFFF'"
+			                & " stroke-width='2'>"
+			                & "<title>Aperturados: "
+			                & FORMAT(__Valor, "#,0")
+			                & "</title>"
+			                & "</circle>"
+			                &
+			            "<text"
+			                & " x='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                & " y='" & FORMAT(__Y - 8, "0.00", "en-US") & "'"
+			                & " text-anchor='middle'"
+			                & " font-family='Segoe UI'"
+			                & " font-size='9'"
+			                & " font-weight='600'"
+			                & " fill='#4A78F6'>"
+			                & FORMAT(__Valor, "#,0")
+			                & "</text>",
+			
+			        "",
+			        [@Indice],
+			        ASC
+			    )
+			
+			/* ============================================================
+			   8. Marcadores y etiquetas de Balance
+			   ============================================================ */
+			VAR __MarcadoresBalance =
+			    CONCATENATEX(
+			        FILTER(
+			            __Categorias,
+			            NOT ISBLANK([@Balance])
+			        ),
+			
+			        VAR __Indice = [@Indice]
+			        VAR __Valor = [@Balance]
+			
+			        VAR __X =
+			            IF(
+			                __CantidadCategorias > 1,
+			                __MargenX + (__Indice * __SeparacionX),
+			                __AnchoSVG / 2
+			            )
+			
+			        VAR __Y =
+			            __MargenSuperior
+			                + __AltoPlot
+			                - DIVIDE(
+			                    __Valor - __MinEscala,
+			                    __Rango,
+			                    0
+			                ) * __AltoPlot
+			
+			        RETURN
+			            "<circle"
+			                & " cx='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                & " cy='" & FORMAT(__Y, "0.00", "en-US") & "'"
+			                & " r='4'"
+			                & " fill='#1E4FAF'"
+			                & " stroke='#FFFFFF'"
+			                & " stroke-width='2'>"
+			                & "<title>Balance: "
+			                & FORMAT(__Valor, "#,0")
+			                & "</title>"
+			                & "</circle>"
+			                &
+			            "<text"
+			                & " x='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                & " y='" & FORMAT(__Y + 14, "0.00", "en-US") & "'"
+			                & " text-anchor='middle'"
+			                & " font-family='Segoe UI'"
+			                & " font-size='9'"
+			                & " font-weight='600'"
+			                & " fill='#1E4FAF'>"
+			                & FORMAT(__Valor, "#,0")
+			                & "</text>",
+			
+			        "",
+			        [@Indice],
+			        ASC
+			    )
+			
+			/* ============================================================
+			   9. Marcadores y etiquetas de Cerrados
+			   ============================================================ */
+			VAR __MarcadoresCerrados =
+			    CONCATENATEX(
+			        FILTER(
+			            __Categorias,
+			            NOT ISBLANK([@Cerrados])
+			        ),
+			
+			        VAR __Indice = [@Indice]
+			        VAR __Valor = [@Cerrados]
+			
+			        VAR __X =
+			            IF(
+			                __CantidadCategorias > 1,
+			                __MargenX + (__Indice * __SeparacionX),
+			                __AnchoSVG / 2
+			            )
+			
+			        VAR __Y =
+			            __MargenSuperior
+			                + __AltoPlot
+			                - DIVIDE(
+			                    __Valor - __MinEscala,
+			                    __Rango,
+			                    0
+			                ) * __AltoPlot
+			
+			        RETURN
+			            "<circle"
+			                & " cx='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                & " cy='" & FORMAT(__Y, "0.00", "en-US") & "'"
+			                & " r='4'"
+			                & " fill='#1198A5'"
+			                & " stroke='#FFFFFF'"
+			                & " stroke-width='2'>"
+			                & "<title>Cerrados: "
+			                & FORMAT(__Valor, "#,0")
+			                & "</title>"
+			                & "</circle>"
+			                &
+			            "<text"
+			                & " x='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                & " y='" & FORMAT(__Y - 8, "0.00", "en-US") & "'"
+			                & " text-anchor='middle'"
+			                & " font-family='Segoe UI'"
+			                & " font-size='9'"
+			                & " font-weight='600'"
+			                & " fill='#1198A5'>"
+			                & FORMAT(__Valor, "#,0")
+			                & "</text>",
+			
+			        "",
+			        [@Indice],
+			        ASC
+			    )
+			
+			/* ============================================================
+			   10. Línea de cero
+			   ============================================================ */
+			VAR __ZeroY =
+			    __MargenSuperior
+			        + __AltoPlot
+			        - DIVIDE(
+			            0 - __MinEscala,
+			            __Rango,
+			            0
+			        ) * __AltoPlot
+			
+			/* ============================================================
+			   11. Etiquetas del eje X
+			   ============================================================ */
+			VAR __EtiquetasHTML =
+			    CONCATENATEX(
+			        __Categorias,
+			
+			        "<div style='"
+			            & "flex:1 1 0;"
+			            & "min-width:0;"
+			            & "text-align:center;"
+			            & "font-size:8px;"
+			            & "color:#62708A;"
+			            & "white-space:nowrap;"
+			            & "overflow:hidden;"
+			            & "'>"
+			            & [@Etiqueta]
+			            & "</div>",
+			
+			        "",
+			        [@Indice],
+			        ASC
+			    )
+			
+			RETURN
+			    "<div style='"
+			        & "height:100%;"
+			        & "max-height:100%;"
+			        & [DS_Contenedor_Estilo]
+			        & "'>"
+			
+			        & "<div style='"
+			        & [DS_Titulo_Estilo]
+			        & "'>"
+			        & "Balance de Producción SOC"
+			        & "</div>"
+			
+			        & IF(
+			            __SinDatos,
+			
+			            "<div style='"
+			                & [DS_SinDatos_Estilo]
+			                & "'>"
+			                & [DS_SinDatos_Mensaje]
+			                & "</div>",
+			
+			            "<div style='"
+			                & "flex:1 1 auto;"
+			                & "min-height:0;"
+			                & "display:flex;"
+			                & "flex-direction:column;"
+			                & "overflow:hidden;"
+			                & "'>"
+			
+			                & "<div style='"
+			                    & "height:138px;"
+			                    & "box-sizing:border-box;"
+			                    & "overflow:hidden;"
+			                    & "position:relative;"
+			                    & "'>"
+			
+			                    & "<svg"
+			                        & " xmlns='http://www.w3.org/2000/svg'"
+			                        & " width='100%'"
+			                        & " height='100%'"
+			                        & " viewBox='0 0 "
+			                        & FORMAT(__AnchoSVG, "0", "en-US")
+			                        & " "
+			                        & FORMAT(__AltoSVG, "0", "en-US")
+			                        & "'"
+			                        & " preserveAspectRatio='none'"
+			                        & " style='display:block;'>"
+			
+			                        & "<line"
+			                            & " x1='" & FORMAT(__MargenX, "0", "en-US") & "'"
+			                            & " y1='" & FORMAT(__ZeroY, "0.00", "en-US") & "'"
+			                            & " x2='" & FORMAT(__AnchoSVG - __MargenX, "0", "en-US") & "'"
+			                            & " y2='" & FORMAT(__ZeroY, "0.00", "en-US") & "'"
+			                            & " stroke='#DCE6F5'"
+			                            & " stroke-width='1'"
+			                            & " stroke-dasharray='5,5'>"
+			                        & "</line>"
+			
+			                        & IF(
+			                            COUNTROWS(
+			                                FILTER(
+			                                    __Categorias,
+			                                    NOT ISBLANK([@Aperturados])
+			                                )
+			                            ) >= 2,
+			                            "<polyline points='"
+			                                & __PuntosAperturados
+			                                & "' fill='none'"
+			                                & " stroke='#4A78F6'"
+			                                & " stroke-width='3'"
+			                                & " stroke-linecap='round'"
+			                                & " stroke-linejoin='round'>"
+			                                & "</polyline>",
+			                            ""
+			                        )
+			
+			                        & IF(
+			                            COUNTROWS(
+			                                FILTER(
+			                                    __Categorias,
+			                                    NOT ISBLANK([@Balance])
+			                                )
+			                            ) >= 2,
+			                            "<polyline points='"
+			                                & __PuntosBalance
+			                                & "' fill='none'"
+			                                & " stroke='#1E4FAF'"
+			                                & " stroke-width='3'"
+			                                & " stroke-linecap='round'"
+			                                & " stroke-linejoin='round'>"
+			                                & "</polyline>",
+			                            ""
+			                        )
+			
+			                        & IF(
+			                            COUNTROWS(
+			                                FILTER(
+			                                    __Categorias,
+			                                    NOT ISBLANK([@Cerrados])
+			                                )
+			                            ) >= 2,
+			                            "<polyline points='"
+			                                & __PuntosCerrados
+			                                & "' fill='none'"
+			                                & " stroke='#1198A5'"
+			                                & " stroke-width='3'"
+			                                & " stroke-linecap='round'"
+			                                & " stroke-linejoin='round'>"
+			                                & "</polyline>",
+			                            ""
+			                        )
+			
+			                        & __MarcadoresAperturados
+			                        & __MarcadoresBalance
+			                        & __MarcadoresCerrados
+			
+			                    & "</svg>"
+			                & "</div>"
+			
+			                & "<div style='"
+			                    & "display:flex;"
+			                    & "flex-direction:row;"
+			                    & "height:16px;"
+			                    & "min-height:16px;"
+			                    & "box-sizing:border-box;"
+			                    & "padding:0 4px;"
+			                    & "'>"
+			                    & __EtiquetasHTML
+			                & "</div>"
+			
+			                & "<div style='"
+			                    & "display:flex;"
+			                    & "align-items:center;"
+			                    & "justify-content:center;"
+			                    & "flex-wrap:wrap;"
+			                    & "height:16px;"
+			                    & "min-height:16px;"
+			                    & "overflow:hidden;"
+			                    & "'>"
+			
+			                    & "<span style='display:inline-flex;align-items:center;gap:4px;margin-right:10px;font-size:8px;color:#53627C;'>"
+			                        & "<span style='width:10px;height:2px;background:#4A78F6;display:inline-block;'></span>"
+			                        & "Aperturados"
+			                    & "</span>"
+			
+			                    & "<span style='display:inline-flex;align-items:center;gap:4px;margin-right:10px;font-size:8px;color:#53627C;'>"
+			                        & "<span style='width:10px;height:2px;background:#1E4FAF;display:inline-block;'></span>"
+			                        & "Balance"
+			                    & "</span>"
+			
+			                    & "<span style='display:inline-flex;align-items:center;gap:4px;font-size:8px;color:#53627C;'>"
+			                        & "<span style='width:10px;height:2px;background:#1198A5;display:inline-block;'></span>"
+			                        & "Cerrados"
+			                    & "</span>"
+			
+			                & "</div>"
+			            & "</div>"
+			        )
+			
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: b2c3d4e5-0004-4f33-9b33-300000000004
+
+	measure HTML_Backlog_Area_Backlog =
+			
+			VAR __AnchoSVG = 460
+			VAR __AltoSVG = 138
+			
+			VAR __MargenX = 24
+			VAR __MargenSuperior = 16
+			VAR __MargenInferior = 12
+			
+			VAR __AnchoPlot =
+			    __AnchoSVG - (__MargenX * 2)
+			
+			VAR __AltoPlot =
+			    __AltoSVG - __MargenSuperior - __MargenInferior
+			
+			/* ============================================================
+			   1. Datos por anio y mes
+			   ============================================================ */
+			VAR __CategoriasBase =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(
+			                Tabla_Combinada,
+			                Calendario[Anio],
+			                Calendario[Mes]
+			            ),
+			
+			            "@Orden",
+			                Calendario[Anio] * 100
+			                    + Calendario[Mes],
+			
+			            "@Etiqueta",
+			                SWITCH(
+			                    Calendario[Mes],
+			                    1, "ene",
+			                    2, "feb",
+			                    3, "mar",
+			                    4, "abr",
+			                    5, "may",
+			                    6, "jun",
+			                    7, "jul",
+			                    8, "ago",
+			                    9, "sep",
+			                    10, "oct",
+			                    11, "nov",
+			                    12, "dic",
+			                    ""
+			                )
+			                    & " "
+			                    & RIGHT(
+			                        FORMAT(
+			                            Calendario[Anio],
+			                            "0000"
+			                        ),
+			                        2
+			                    ),
+			
+			            "@RTBalance",
+			                CALCULATE([RT_Balance])
+			        ),
+			
+			        NOT(ISBLANK([@RTBalance]))
+			    )
+			
+			VAR __Categorias =
+			    ADDCOLUMNS(
+			        __CategoriasBase,
+			
+			        "@Indice",
+			            VAR __OrdenActual = [@Orden]
+			            RETURN
+			                COUNTROWS(
+			                    FILTER(
+			                        __CategoriasBase,
+			                        [@Orden] < __OrdenActual
+			                    )
+			                )
+			    )
+			
+			VAR __CantidadCategorias =
+			    COUNTROWS(__Categorias)
+			
+			VAR __SinDatos =
+			    __CantidadCategorias = 0
+			
+			/* ============================================================
+			   2. Maximo y minimo del grafico
+			   ============================================================ */
+			VAR __MaxVal =
+			    MAXX(
+			        __Categorias,
+			        [@RTBalance]
+			    )
+			
+			VAR __MinVal =
+			    MINX(
+			        __Categorias,
+			        [@RTBalance]
+			    )
+			
+			VAR __MaxEscala =
+			    MAX(
+			        COALESCE(__MaxVal, 0),
+			        0
+			    )
+			
+			VAR __MinEscala =
+			    MIN(
+			        COALESCE(__MinVal, 0),
+			        0
+			    )
+			
+			VAR __Rango =
+			    MAX(
+			        __MaxEscala - __MinEscala,
+			        1
+			    )
+			
+			/* ============================================================
+			   3. Coordenada X comun
+			   ============================================================ */
+			VAR __SeparacionX =
+			    IF(
+			        __CantidadCategorias > 1,
+			        DIVIDE(
+			            __AnchoPlot,
+			            __CantidadCategorias - 1,
+			            0
+			        ),
+			        0
+			    )
+			
+			/* ============================================================
+			   4. Puntos de la linea
+			   ============================================================ */
+			VAR __PuntosLinea =
+			    CONCATENATEX(
+			        __Categorias,
+			
+			        VAR __Indice = [@Indice]
+			
+			        VAR __X =
+			            IF(
+			                __CantidadCategorias > 1,
+			                __MargenX + (__Indice * __SeparacionX),
+			                __AnchoSVG / 2
+			            )
+			
+			        VAR __Y =
+			            __MargenSuperior
+			                + __AltoPlot
+			                - DIVIDE(
+			                    [@RTBalance] - __MinEscala,
+			                    __Rango,
+			                    0
+			                ) * __AltoPlot
+			
+			        RETURN
+			            FORMAT(__X, "0.00", "en-US")
+			                & ","
+			                & FORMAT(__Y, "0.00", "en-US"),
+			
+			        " ",
+			        [@Indice],
+			        ASC
+			    )
+			
+			/* ============================================================
+			   5. Marcadores y etiquetas
+			   ============================================================ */
+			VAR __MarcadoresHTML =
+			    CONCATENATEX(
+			        __Categorias,
+			
+			        VAR __Indice = [@Indice]
+			        VAR __Valor = [@RTBalance]
+			
+			        VAR __X =
+			            IF(
+			                __CantidadCategorias > 1,
+			                __MargenX + (__Indice * __SeparacionX),
+			                __AnchoSVG / 2
+			            )
+			
+			        VAR __Y =
+			            __MargenSuperior
+			                + __AltoPlot
+			                - DIVIDE(
+			                    __Valor - __MinEscala,
+			                    __Rango,
+			                    0
+			                ) * __AltoPlot
+			
+			        RETURN
+			            "<circle"
+			                & " cx='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                & " cy='" & FORMAT(__Y, "0.00", "en-US") & "'"
+			                & " r='4'"
+			                & " fill='#1E4FAF'"
+			                & " stroke='#FFFFFF'"
+			                & " stroke-width='2'>"
+			                & "<title>Backlog: "
+			                & FORMAT(__Valor, "#,0")
+			                & "</title>"
+			                & "</circle>"
+			                &
+			            "<text"
+			                & " x='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                & " y='" & FORMAT(__Y - 8, "0.00", "en-US") & "'"
+			                & " text-anchor='middle'"
+			                & " font-family='Segoe UI'"
+			                & " font-size='9'"
+			                & " font-weight='600'"
+			                & " fill='#1E4FAF'>"
+			                & FORMAT(__Valor, "#,0")
+			                & "</text>",
+			
+			        "",
+			        [@Indice],
+			        ASC
+			    )
+			
+			/* ============================================================
+			   6. Linea de cero
+			   ============================================================ */
+			VAR __ZeroY =
+			    __MargenSuperior
+			        + __AltoPlot
+			        - DIVIDE(
+			            0 - __MinEscala,
+			            __Rango,
+			            0
+			        ) * __AltoPlot
+			
+			/* ============================================================
+			   7. Ruta del area
+			   ============================================================ */
+			VAR __PrimerX =
+			    __MargenX
+			
+			VAR __UltimoX =
+			    IF(
+			        __CantidadCategorias > 1,
+			        __MargenX + ((__CantidadCategorias - 1) * __SeparacionX),
+			        __AnchoSVG / 2
+			    )
+			
+			VAR __RutaArea =
+			    "M " & FORMAT(__PrimerX, "0.00", "en-US") & " " & FORMAT(__ZeroY, "0.00", "en-US")
+			        & " L " & __PuntosLinea
+			        & " L " & FORMAT(__UltimoX, "0.00", "en-US") & " " & FORMAT(__ZeroY, "0.00", "en-US")
+			        & " Z"
+			
+			/* ============================================================
+			   8. Etiquetas del eje X
+			   ============================================================ */
+			VAR __EtiquetasHTML =
+			    CONCATENATEX(
+			        __Categorias,
+			
+			        "<div style='"
+			            & "flex:1 1 0;"
+			            & "min-width:0;"
+			            & "text-align:center;"
+			            & "font-size:8px;"
+			            & "color:#62708A;"
+			            & "white-space:nowrap;"
+			            & "overflow:hidden;"
+			            & "'>"
+			            & [@Etiqueta]
+			            & "</div>",
+			
+			        "",
+			        [@Indice],
+			        ASC
+			    )
+			
+			RETURN
+			    "<div style='"
+			        & "height:100%;"
+			        & "max-height:100%;"
+			        & [DS_Contenedor_Estilo]
+			        & "'>"
+			
+			        & "<div style='"
+			        & [DS_Titulo_Estilo]
+			        & "'>"
+			        & "Backlog SOC"
+			        & "</div>"
+			
+			        & IF(
+			            __SinDatos,
+			
+			            "<div style='"
+			                & [DS_SinDatos_Estilo]
+			                & "'>"
+			                & [DS_SinDatos_Mensaje]
+			                & "</div>",
+			
+			            "<div style='"
+			                & "flex:1 1 auto;"
+			                & "min-height:0;"
+			                & "display:flex;"
+			                & "flex-direction:column;"
+			                & "overflow:hidden;"
+			                & "'>"
+			
+			                & "<div style='"
+			                    & "height:138px;"
+			                    & "box-sizing:border-box;"
+			                    & "overflow:hidden;"
+			                    & "position:relative;"
+			                    & "'>"
+			
+			                    & "<svg"
+			                        & " xmlns='http://www.w3.org/2000/svg'"
+			                        & " width='100%'"
+			                        & " height='100%'"
+			                        & " viewBox='0 0 "
+			                        & FORMAT(__AnchoSVG, "0", "en-US")
+			                        & " "
+			                        & FORMAT(__AltoSVG, "0", "en-US")
+			                        & "'"
+			                        & " preserveAspectRatio='none'"
+			                        & " style='display:block;'>"
+			
+			                        & "<line"
+			                            & " x1='" & FORMAT(__MargenX, "0", "en-US") & "'"
+			                            & " y1='" & FORMAT(__ZeroY, "0.00", "en-US") & "'"
+			                            & " x2='" & FORMAT(__AnchoSVG - __MargenX, "0", "en-US") & "'"
+			                            & " y2='" & FORMAT(__ZeroY, "0.00", "en-US") & "'"
+			                            & " stroke='#DCE6F5'"
+			                            & " stroke-width='1'"
+			                            & " stroke-dasharray='5,5'>"
+			                        & "</line>"
+			
+			                        & IF(
+			                            __CantidadCategorias >= 2,
+			                            "<path d='"
+			                                & __RutaArea
+			                                & "' fill='#4A78F6'"
+			                                & " fill-opacity='0.25'"
+			                                & " stroke='none'>"
+			                                & "</path>",
+			                            ""
+			                        )
+			
+			                        & IF(
+			                            __CantidadCategorias >= 2,
+			                            "<polyline points='"
+			                                & __PuntosLinea
+			                                & "' fill='none'"
+			                                & " stroke='#1E4FAF'"
+			                                & " stroke-width='3'"
+			                                & " stroke-linecap='round'"
+			                                & " stroke-linejoin='round'>"
+			                                & "</polyline>",
+			                            ""
+			                        )
+			
+			                        & __MarcadoresHTML
+			
+			                    & "</svg>"
+			                & "</div>"
+			
+			                & "<div style='"
+			                    & "display:flex;"
+			                    & "flex-direction:row;"
+			                    & "height:16px;"
+			                    & "min-height:16px;"
+			                    & "box-sizing:border-box;"
+			                    & "padding:0 4px;"
+			                    & "'>"
+			                    & __EtiquetasHTML
+			                & "</div>"
+			
+			                & "<div style='"
+			                    & "display:flex;"
+			                    & "align-items:center;"
+			                    & "justify-content:center;"
+			                    & "flex-wrap:wrap;"
+			                    & "height:16px;"
+			                    & "min-height:16px;"
+			                    & "overflow:hidden;"
+			                    & "'>"
+			
+			                    & "<span style='display:inline-flex;align-items:center;gap:4px;font-size:8px;color:#53627C;'>"
+			                        & "<span style='width:10px;height:2px;background:#1E4FAF;display:inline-block;'></span>"
+			                        & "Backlog acumulado"
+			                    & "</span>"
+			
+			                & "</div>"
+			            & "</div>"
+			        )
+			
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: b2c3d4e5-0005-4f33-9b33-300000000005
+
+	measure DS_Icono_Q2 = "<svg width='17' height='17' viewBox='0 0 24 24' fill='none' style='flex-shrink:0;'><path d='M3 12h5' stroke='#C7D2E8' stroke-width='1.3'/><path d='M3 9v6' stroke='#C7D2E8' stroke-width='1.3'/><path d='M8 7h8v10H8z' stroke='#C7D2E8' stroke-width='1.5' fill='none'/><path d='M16 12h5' stroke='#C7D2E8' stroke-width='1.3'/><path d='M21 9v6' stroke='#C7D2E8' stroke-width='1.3'/><path d='M12 6v12' stroke='#1E4FAF' stroke-width='2.6' stroke-linecap='round'/></svg>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: c3d4e5f6-0003-4a44-9c44-400000000003
+
+	measure HTML_KPI_Q2 =
+			VAR __Dias = PERCENTILE.INC(Tabla_Combinada[duracion_resolucion_soc_dias], 0.5)
+			VAR __TotalSeg = __Dias * 86400
+			VAR __H = INT(DIVIDE(__TotalSeg, 3600, 0))
+			VAR __M = INT(DIVIDE(MOD(__TotalSeg, 3600), 60, 0))
+			VAR __S = INT(MOD(__TotalSeg, 60))
+			VAR __Texto =
+			    IF(
+			        ISBLANK(__Dias),
+			        "-",
+			        FORMAT(__H, "00") & ":" & FORMAT(__M, "00") & ":" & FORMAT(__S, "00")
+			    )
+			RETURN
+			    "<div style='" & [DS_KPI_Tile_Estilo] & "'>"
+			        & "<div style='" & [DS_KPI_Header_Estilo] & "'>"
+			            & [DS_Icono_Q2]
+			            & "<div style='" & [DS_KPI_Label_Estilo] & "'>Q2 (mediana)</div>"
+			        & "</div>"
+			        & "<div style='font-size:14px;font-weight:700;color:" & [DS_Color_TituloTexto] & ";text-align:center;white-space:nowrap;'>"
+			            & __Texto
+			        & "</div>"
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: c3d4e5f6-0013-4a44-9c44-400000000013
+
+	measure HTML_Cuartiles_Tiempos =
+			
+			
+			/* ============================================================
+			   1. Cuartiles
+			   ============================================================ */
+			VAR __Q1 = PERCENTILE.INC(Tabla_Combinada[duracion_resolucion_soc_dias], 0.25)
+			VAR __Q2 = PERCENTILE.INC(Tabla_Combinada[duracion_resolucion_soc_dias], 0.5)
+			VAR __Q3 = PERCENTILE.INC(Tabla_Combinada[duracion_resolucion_soc_dias], 0.75)
+			VAR __Min = MIN(Tabla_Combinada[duracion_resolucion_soc_dias])
+			VAR __Max = MAX(Tabla_Combinada[duracion_resolucion_soc_dias])
+			
+			VAR __SinDatos = ISBLANK(__Max)
+			
+			VAR __IQR = __Q3 - __Q1
+			
+			/* ============================================================
+			   2. Vallas 1.5 x IQR y extremos de los bigotes
+			      (el bigote llega al ultimo caso REAL dentro de la valla)
+			   ============================================================ */
+			VAR __VallaSup = __Q3 + 1.5 * __IQR
+			VAR __VallaInf = __Q1 - 1.5 * __IQR
+			
+			VAR __FilasConDato =
+			    FILTER(
+			        Tabla_Combinada,
+			        NOT ISBLANK(Tabla_Combinada[duracion_resolucion_soc_dias])
+			    )
+			
+			VAR __TotalCasos = COUNTROWS(__FilasConDato)
+			
+			VAR __BigoteSup =
+			    MAXX(
+			        FILTER(__FilasConDato, Tabla_Combinada[duracion_resolucion_soc_dias] <= __VallaSup),
+			        Tabla_Combinada[duracion_resolucion_soc_dias]
+			    )
+			
+			VAR __BigoteInf =
+			    MINX(
+			        FILTER(__FilasConDato, Tabla_Combinada[duracion_resolucion_soc_dias] >= __VallaInf),
+			        Tabla_Combinada[duracion_resolucion_soc_dias]
+			    )
+			
+			VAR __BSup = COALESCE(__BigoteSup, __Max)
+			VAR __BInf = COALESCE(__BigoteInf, __Min)
+			
+			VAR __AtipicosSup =
+			    COALESCE(
+			        COUNTROWS(FILTER(__FilasConDato, Tabla_Combinada[duracion_resolucion_soc_dias] > __VallaSup)),
+			        0
+			    )
+			
+			VAR __AtipicosInf =
+			    COALESCE(
+			        COUNTROWS(FILTER(__FilasConDato, Tabla_Combinada[duracion_resolucion_soc_dias] < __VallaInf)),
+			        0
+			    )
+			
+			VAR __HayAtipicos = __AtipicosSup > 0
+			
+			/* ============================================================
+			   3. Escala horizontal
+			      Si hay atipicos el eje se recorta en el bigote (84%) y se
+			      reserva la derecha para los puntos atipicos y el maximo.
+			   ============================================================ */
+			VAR __EscalaIni = 4
+			VAR __EscalaFin = IF(__HayAtipicos, 84, 96)
+			VAR __EscalaAncho = __EscalaFin - __EscalaIni
+			VAR __RangoEje = __BSup - __BInf
+			VAR __Degenerado = ISBLANK(__RangoEje) || __RangoEje = 0
+			
+			VAR __PosBInf = IF(__Degenerado, 50, __EscalaIni)
+			VAR __PosQ1 = IF(__Degenerado, 50, __EscalaIni + DIVIDE(__Q1 - __BInf, __RangoEje, 0) * __EscalaAncho)
+			VAR __PosQ2 = IF(__Degenerado, 50, __EscalaIni + DIVIDE(__Q2 - __BInf, __RangoEje, 0) * __EscalaAncho)
+			VAR __PosQ3 = IF(__Degenerado, 50, __EscalaIni + DIVIDE(__Q3 - __BInf, __RangoEje, 0) * __EscalaAncho)
+			VAR __PosBSup = IF(__Degenerado, 50, __EscalaFin)
+			
+			VAR __PctBInf = FORMAT(__PosBInf, "0.00", "en-US") & "%"
+			VAR __PctQ1 = FORMAT(__PosQ1, "0.00", "en-US") & "%"
+			VAR __PctQ2 = FORMAT(__PosQ2, "0.00", "en-US") & "%"
+			VAR __PctQ3 = FORMAT(__PosQ3, "0.00", "en-US") & "%"
+			VAR __PctBSup = FORMAT(__PosBSup, "0.00", "en-US") & "%"
+			
+			VAR __AnchoBigote = FORMAT(MAX(__PosBSup - __PosBInf, 0), "0.00", "en-US") & "%"
+			VAR __AnchoCaja = FORMAT(MAX(__PosQ3 - __PosQ1, 0.8), "0.00", "en-US") & "%"
+			
+			/* ============================================================
+			   4. Textos HH:MM:SS (soporta duraciones mayores a 24 h)
+			   ============================================================ */
+			VAR __S_Q1 = __Q1 * 86400
+			VAR __T_Q1 = FORMAT(INT(DIVIDE(__S_Q1, 3600, 0)), "00") & ":" & FORMAT(INT(DIVIDE(MOD(__S_Q1, 3600), 60, 0)), "00") & ":" & FORMAT(INT(MOD(__S_Q1, 60)), "00")
+			
+			VAR __S_Q2 = __Q2 * 86400
+			VAR __T_Q2 = FORMAT(INT(DIVIDE(__S_Q2, 3600, 0)), "00") & ":" & FORMAT(INT(DIVIDE(MOD(__S_Q2, 3600), 60, 0)), "00") & ":" & FORMAT(INT(MOD(__S_Q2, 60)), "00")
+			
+			VAR __S_Q3 = __Q3 * 86400
+			VAR __T_Q3 = FORMAT(INT(DIVIDE(__S_Q3, 3600, 0)), "00") & ":" & FORMAT(INT(DIVIDE(MOD(__S_Q3, 3600), 60, 0)), "00") & ":" & FORMAT(INT(MOD(__S_Q3, 60)), "00")
+			
+			VAR __S_IQR = __IQR * 86400
+			VAR __T_IQR = FORMAT(INT(DIVIDE(__S_IQR, 3600, 0)), "00") & ":" & FORMAT(INT(DIVIDE(MOD(__S_IQR, 3600), 60, 0)), "00") & ":" & FORMAT(INT(MOD(__S_IQR, 60)), "00")
+			
+			VAR __S_BInf = __BInf * 86400
+			VAR __T_BInf = FORMAT(INT(DIVIDE(__S_BInf, 3600, 0)), "00") & ":" & FORMAT(INT(DIVIDE(MOD(__S_BInf, 3600), 60, 0)), "00") & ":" & FORMAT(INT(MOD(__S_BInf, 60)), "00")
+			
+			VAR __S_BSup = __BSup * 86400
+			VAR __T_BSup = FORMAT(INT(DIVIDE(__S_BSup, 3600, 0)), "00") & ":" & FORMAT(INT(DIVIDE(MOD(__S_BSup, 3600), 60, 0)), "00") & ":" & FORMAT(INT(MOD(__S_BSup, 60)), "00")
+			
+			VAR __S_Valla = __VallaSup * 86400
+			VAR __T_Valla = FORMAT(INT(DIVIDE(__S_Valla, 3600, 0)), "00") & ":" & FORMAT(INT(DIVIDE(MOD(__S_Valla, 3600), 60, 0)), "00") & ":" & FORMAT(INT(MOD(__S_Valla, 60)), "00")
+			
+			VAR __S_Max = __Max * 86400
+			VAR __T_Max = FORMAT(INT(DIVIDE(__S_Max, 3600, 0)), "00") & ":" & FORMAT(INT(DIVIDE(MOD(__S_Max, 3600), 60, 0)), "00") & ":" & FORMAT(INT(MOD(__S_Max, 60)), "00")
+			
+			/* ============================================================
+			   5. Descripcion automatica
+			   ============================================================ */
+			VAR __PctAtipicos =
+			    DIVIDE(__AtipicosSup + __AtipicosInf, __TotalCasos, 0)
+			
+			VAR __FraseMediana =
+			    "La mitad de los casos se resuelve en menos de <b>" & __T_Q2 & "</b>."
+			
+			VAR __FraseCaja =
+			    " El 50% central (Q1-Q3) va de <b>" & __T_Q1 & "</b> a <b>" & __T_Q3 & "</b>"
+			        & ", una dispersion de " & __T_IQR & "."
+			
+			VAR __FraseBigotes =
+			    " El rango habitual llega hasta " & __T_BSup & "."
+			
+			VAR __FraseAtipicos =
+			    IF(
+			        __HayAtipicos,
+			        " Hay <b>" & FORMAT(__AtipicosSup + __AtipicosInf, "#,0") & "</b> "
+			            & IF(__AtipicosSup + __AtipicosInf = 1, "caso atipico", "casos atipicos")
+			            & " (" & FORMAT(__PctAtipicos, "0.0%", "en-US") & " del total) por encima de "
+			            & __T_Valla & ", con un maximo de <b>" & __T_Max & "</b>.",
+			        " Sin casos atipicos; el maximo registrado es <b>" & __T_Max & "</b>."
+			    )
+			
+			VAR __FraseSesgo =
+			    IF(
+			        __Q3 = __Q2 && NOT ISBLANK(__Q2),
+			        " Atencion: Q2 y Q3 coinciden, lo que indica que al menos un cuarto de los casos comparte exactamente el mismo valor.",
+			        ""
+			    )
+			
+			VAR __FraseTotal =
+			    " Calculado sobre " & FORMAT(__TotalCasos, "#,0") & " "
+			        & IF(__TotalCasos = 1, "caso", "casos") & " con duracion registrada."
+			
+			VAR __Descripcion =
+			    __FraseMediana & __FraseCaja & __FraseBigotes & __FraseAtipicos & __FraseSesgo & __FraseTotal
+			
+			RETURN
+			    "<div style='"
+			        & "height:100%;"
+			        & "max-height:100%;"
+			        & [DS_Contenedor_Estilo]
+			        & "'>"
+			
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>Tiempo de Resolucion por Cuartiles</div>"
+			
+			        & IF(
+			            __SinDatos,
+			
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			
+			            /* ---------- Area del grafico ---------- */
+			            "<div style='position:relative;height:124px;flex:0 0 124px;box-sizing:border-box;overflow:hidden;'>"
+			
+			                /* Bigote */
+			                & "<div style='position:absolute;left:" & __PctBInf & ";width:" & __AnchoBigote & ";"
+			                    & "top:64px;height:3px;background:#C7D2E8;'></div>"
+			
+			                /* Tope inferior */
+			                & "<div title='Minimo dentro del rango habitual: " & __T_BInf & "'"
+			                    & " style='position:absolute;left:" & __PctBInf & ";top:51px;transform:translateX(-50%);"
+			                    & "width:3px;height:29px;background:#1E4FAF;border-radius:2px;'></div>"
+			
+			                /* Tope superior */
+			                & "<div title='Maximo dentro del rango habitual (valla 1.5xIQR): " & __T_BSup & "'"
+			                    & " style='position:absolute;left:" & __PctBSup & ";top:51px;transform:translateX(-50%);"
+			                    & "width:3px;height:29px;background:#1E4FAF;border-radius:2px;'></div>"
+			
+			                /* Caja Q1-Q3 */
+			                & "<div title='Rango intercuartilico Q1-Q3: " & __T_Q1 & " a " & __T_Q3 & "'"
+			                    & " style='position:absolute;left:" & __PctQ1 & ";width:" & __AnchoCaja & ";"
+			                    & "top:45px;height:41px;background:rgba(74,120,246,0.30);"
+			                    & "border:1.5px solid #1E4FAF;border-radius:3px;box-sizing:border-box;'></div>"
+			
+			                /* Mediana */
+			                & "<div title='Q2 mediana: " & __T_Q2 & "'"
+			                    & " style='position:absolute;left:" & __PctQ2 & ";top:38px;transform:translateX(-50%);"
+			                    & "width:3px;height:55px;background:#0F2D68;border-radius:2px;'></div>"
+			
+			                /* Etiquetas extremos arriba */
+			                & "<div style='position:absolute;left:" & __PctBInf & ";top:20px;transform:translateX(-50%);"
+			                    & "font-size:10px;font-weight:700;color:#1E4FAF;white-space:nowrap;'>" & __T_BInf & "</div>"
+			                & "<div style='position:absolute;left:" & __PctBInf & ";top:7px;transform:translateX(-50%);"
+			                    & "font-size:8px;color:#8090AA;white-space:nowrap;'>min.</div>"
+			
+			                & "<div style='position:absolute;left:" & __PctBSup & ";top:20px;transform:translateX(-50%);"
+			                    & "font-size:10px;font-weight:700;color:#1E4FAF;white-space:nowrap;'>" & __T_BSup & "</div>"
+			                & "<div style='position:absolute;left:" & __PctBSup & ";top:7px;transform:translateX(-50%);"
+			                    & "font-size:8px;color:#8090AA;white-space:nowrap;'>"
+			                    & IF(__HayAtipicos, "valla", "max.") & "</div>"
+			
+			                /* Mediana debajo */
+			                & "<div style='position:absolute;left:" & __PctQ2 & ";top:92px;transform:translateX(-50%);"
+			                    & "font-size:11px;font-weight:700;color:#0F2D68;white-space:nowrap;'>" & __T_Q2 & "</div>"
+			                & "<div style='position:absolute;left:" & __PctQ2 & ";top:106px;transform:translateX(-50%);"
+			                    & "font-size:8px;color:#62708A;white-space:nowrap;'>Q2 mediana</div>"
+			
+			                /* Q1 y Q3 */
+			                & "<div style='position:absolute;left:" & __PctQ1 & ";top:92px;transform:translateX(-50%);"
+			                    & "font-size:9px;color:#5B6B8C;white-space:nowrap;'>Q1</div>"
+			                & "<div style='position:absolute;left:" & __PctQ3 & ";top:92px;transform:translateX(-50%);"
+			                    & "font-size:9px;color:#5B6B8C;white-space:nowrap;'>Q3</div>"
+			
+			                /* Atipicos: puntos + maximo anotado */
+			                & IF(
+			                    __HayAtipicos,
+			                    "<div style='position:absolute;left:88%;top:61px;width:8px;height:8px;border-radius:50%;"
+			                        & "background:#1E4FAF;opacity:0.75;'></div>"
+			                        & "<div style='position:absolute;left:93%;top:63px;width:7px;height:7px;border-radius:50%;"
+			                        & "background:#1E4FAF;opacity:0.5;'></div>"
+			                        & "<div style='position:absolute;right:0;top:20px;text-align:right;'>"
+			                            & "<div style='font-size:8px;color:#8090AA;white-space:nowrap;'>"
+			                            & FORMAT(__AtipicosSup, "#,0") & " atipicos</div>"
+			                            & "<div style='font-size:10px;font-weight:700;color:#1E4FAF;white-space:nowrap;'>"
+			                            & __T_Max & "</div>"
+			                        & "</div>",
+			                    ""
+			                )
+			
+			            & "</div>"
+			
+			            /* ---------- Descripcion automatica ---------- */
+			            & "<div style='flex:1 1 auto;min-height:0;padding-top:5px;margin-top:2px;"
+			                & "border-top:1px solid #EEF3FA;box-sizing:border-box;overflow:hidden;"
+			                & "font-size:9.5px;line-height:1.45;color:#5B6B8C;'>"
+			                & __Descripcion
+			            & "</div>"
+			        )
+			
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: c3d4e5f6-0021-4a44-9c44-400000000021
+
+	measure HTML_Registro_Tabla =
+			
+			
+			VAR __Tipo = SELECTEDVALUE(Tabla_Combinada[tipo_definitivo])
+			VAR __Titulo =
+			    SWITCH(
+			        TRUE(),
+			        __Tipo = "REQUERIMIENTO", "Detalle REQ",
+			        __Tipo = "INCIDENCIA", "Detalle INC",
+			        __Tipo = "ACTIVIDAD", "Detalle ACT",
+			        "Detalle"
+			    )
+			
+			VAR __Filas =
+			    ADDCOLUMNS(
+			        Tabla_Combinada,
+			        "@Estado", RELATED(tb_dim_status[status])
+			    )
+			
+			VAR __CantidadFilas =
+			    COUNTROWS(__Filas)
+			
+			VAR __SinDatos =
+			    __CantidadFilas = 0
+			
+			VAR __Encabezados =
+			    {
+			        "N. Incidente", "Estado", "Descripcion", "Fecha Notificacion", "Duracion SOC"
+			    }
+			
+			VAR __EncabezadoHTML =
+			    CONCATENATEX(
+			        __Encabezados,
+			        "<div style='"
+			            & "color:#5B6B8C;font-size:9px;font-weight:700;padding:3px 6px;"
+			            & "border-bottom:1px solid #DCE6F5;box-sizing:border-box;position:sticky;top:0;"
+			            & "background:#FAFBFD;white-space:nowrap;z-index:2;'>"
+			            & [Value]
+			        & "</div>"
+			    )
+			
+			VAR __FilasHTML =
+			    CONCATENATEX(
+			        __Filas,
+			
+			        VAR __EstadoTxt =
+			            IF(ISBLANK([@Estado]) || [@Estado] = "", "-", [@Estado])
+			        VAR __NumeroTxt =
+			            IF(ISBLANK(Tabla_Combinada[incident_number]), "-", Tabla_Combinada[incident_number])
+			        VAR __DescTxt =
+			            IF(
+			                ISBLANK(Tabla_Combinada[description]) || Tabla_Combinada[description] = "",
+			                "-",
+			                Tabla_Combinada[description]
+			            )
+			        VAR __FechaTxt =
+			            IF(
+			                ISBLANK(Tabla_Combinada[fecha_y_hora_de_notificacion]), "-",
+			                FORMAT(Tabla_Combinada[fecha_y_hora_de_notificacion], "dd/mm/yy HH:mm")
+			            )
+			        VAR __Dias = Tabla_Combinada[duracion_resolucion_soc_dias]
+			        VAR __TotalSeg = __Dias * 86400
+			        VAR __H = INT(DIVIDE(__TotalSeg, 3600, 0))
+			        VAR __M = INT(DIVIDE(MOD(__TotalSeg, 3600), 60, 0))
+			        VAR __S = INT(MOD(__TotalSeg, 60))
+			        VAR __DuracionTxt =
+			            IF(
+			                ISBLANK(__Dias),
+			                "-",
+			                FORMAT(__H, "00") & ":" & FORMAT(__M, "00") & ":" & FORMAT(__S, "00")
+			            )
+			
+			        RETURN
+			            "<div style='"
+			                & "border-left:2px solid #4A78F6;color:#3D4D68;font-size:9px;"
+			                & "padding:3px 6px;box-sizing:border-box;border-bottom:1px solid #EEF3FA;"
+			                & "white-space:nowrap;'>"
+			                & __NumeroTxt
+			            & "</div>"
+			            & "<div style='"
+			                & "color:#3D4D68;font-size:9px;font-weight:600;padding:3px 6px;box-sizing:border-box;"
+			                & "border-bottom:1px solid #EEF3FA;white-space:nowrap;overflow:hidden;"
+			                & "text-overflow:ellipsis;'>"
+			                & __EstadoTxt
+			            & "</div>"
+			            & "<div title='" & __DescTxt & "' style='"
+			                & "color:#62708A;font-size:9px;padding:3px 6px;box-sizing:border-box;"
+			                & "border-bottom:1px solid #EEF3FA;white-space:nowrap;overflow:hidden;"
+			                & "text-overflow:ellipsis;min-width:0;'>"
+			                & __DescTxt
+			            & "</div>"
+			            & "<div style='"
+			                & "color:#62708A;font-size:9px;padding:3px 6px;box-sizing:border-box;"
+			                & "border-bottom:1px solid #EEF3FA;white-space:nowrap;'>"
+			                & __FechaTxt
+			            & "</div>"
+			            & "<div style='"
+			                & "color:#12346C;font-size:9px;font-weight:600;padding:3px 6px;box-sizing:border-box;"
+			                & "border-bottom:1px solid #EEF3FA;white-space:nowrap;text-align:right;'>"
+			                & __DuracionTxt
+			            & "</div>",
+			
+			        "",
+			        Tabla_Combinada[fecha_y_hora_de_notificacion],
+			        DESC
+			    )
+			
+			RETURN
+			    "<div style='"
+			        & "height:100%;"
+			        & "max-height:100%;"
+			        & [DS_Contenedor_Estilo]
+			        & "'>"
+			
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>" & __Titulo & "</div>"
+			
+			        & IF(
+			            __SinDatos,
+			
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			
+			            "<div style='flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;'>"
+			                & "<div style='"
+			                    & "display:grid;"
+			                    & "grid-template-columns:max-content max-content minmax(80px,1fr) max-content max-content;"
+			                    & "width:100%;box-sizing:border-box;'>"
+			                    & __EncabezadoHTML
+			                    & __FilasHTML
+			                & "</div>"
+			            & "</div>"
+			        )
+			
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: c3d4e5f6-0022-4a44-9c44-400000000022
+
+	measure HTML_Donut_Estados =
+			
+			VAR __RadioExt = 52
+			VAR __RadioInt = 30
+			VAR __CX = 90
+			VAR __CY = 90
+			VAR __RadioDentro = 41
+			
+			/* Factor de ancho por digito. Subirlo hace la regla mas
+			   conservadora (mas valores salen afuera). */
+			VAR __AnchoPorDigito = 5.2
+			
+			VAR __CategoriasBase =
+			    FILTER(
+			        ADDCOLUMNS(
+			            VALUES(tb_dim_status[status]),
+			            "@Total", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@Total] > 0
+			    )
+			
+			VAR __TotalGeneral = SUMX(__CategoriasBase, [@Total])
+			
+			VAR __Categorias =
+			    ADDCOLUMNS(
+			        __CategoriasBase,
+			        "@Orden",
+			            VAR __TotalActual = [@Total]
+			            VAR __EstadoActual = tb_dim_status[status]
+			            RETURN
+			                COUNTROWS(
+			                    FILTER(
+			                        __CategoriasBase,
+			                        [@Total] > __TotalActual
+			                            || ([@Total] = __TotalActual && tb_dim_status[status] < __EstadoActual)
+			                    )
+			                ) + 1
+			    )
+			
+			/* Se marca por fila si el valor entra en su propio arco:
+			   largo del arco a la altura de la etiqueta vs ancho del texto */
+			VAR __ConFlags =
+			    ADDCOLUMNS(
+			        __Categorias,
+			        "@Cabe",
+			            VAR __Frac = DIVIDE([@Total], __TotalGeneral, 0)
+			            VAR __LargoArco = __Frac * 2 * PI() * __RadioDentro
+			            VAR __AnchoTexto = LEN(FORMAT([@Total], "#,0")) * __AnchoPorDigito
+			            RETURN IF(__LargoArco >= __AnchoTexto, 1, 0)
+			    )
+			
+			VAR __CantidadCategorias = COUNTROWS(__ConFlags)
+			
+			VAR __SinDatos = __CantidadCategorias = 0 || __TotalGeneral = 0
+			
+			VAR __SlicesHTML =
+			    CONCATENATEX(
+			        __ConFlags,
+			        VAR __OrdenActual = [@Orden]
+			        VAR __TotalActual = [@Total]
+			        VAR __EtiquetaActual =
+			            IF(ISBLANK(tb_dim_status[status]) || tb_dim_status[status] = "", "(Sin estado)", tb_dim_status[status])
+			        VAR __ColorActual =
+			            SWITCH(
+			                MOD(__OrdenActual - 1, 8),
+			                0, "#1E4FAF", 1, "#4A78F6", 2, "#1198A5", 3, "#7B93D6",
+			                4, "#8FADF9", 5, "#5FC2CE", 6, "#2F5FC4", "#94A3B8"
+			            )
+			        VAR __AntesTotal = SUMX(FILTER(__ConFlags, [@Orden] < __OrdenActual), [@Total])
+			        VAR __FraccionInicio = DIVIDE(__AntesTotal, __TotalGeneral, 0)
+			        VAR __FraccionFin = DIVIDE(__AntesTotal + __TotalActual, __TotalGeneral, 0)
+			        VAR __AnguloInicio = __FraccionInicio * 2 * PI() - PI() / 2
+			        VAR __AnguloFin = __FraccionFin * 2 * PI() - PI() / 2
+			        VAR __X1o = __CX + __RadioExt * COS(__AnguloInicio)
+			        VAR __Y1o = __CY + __RadioExt * SIN(__AnguloInicio)
+			        VAR __X2o = __CX + __RadioExt * COS(__AnguloFin)
+			        VAR __Y2o = __CY + __RadioExt * SIN(__AnguloFin)
+			        VAR __X1i = __CX + __RadioInt * COS(__AnguloFin)
+			        VAR __Y1i = __CY + __RadioInt * SIN(__AnguloFin)
+			        VAR __X2i = __CX + __RadioInt * COS(__AnguloInicio)
+			        VAR __Y2i = __CY + __RadioInt * SIN(__AnguloInicio)
+			        VAR __GranArco = IF(__FraccionFin - __FraccionInicio > 0.5, 1, 0)
+			        RETURN
+			            IF(
+			                __FraccionFin > __FraccionInicio,
+			                "<path d='M "
+			                    & FORMAT(__X1o, "0.00", "en-US") & " " & FORMAT(__Y1o, "0.00", "en-US")
+			                    & " A " & FORMAT(__RadioExt, "0", "en-US") & " " & FORMAT(__RadioExt, "0", "en-US") & " 0 " & FORMAT(__GranArco, "0") & " 1 "
+			                    & FORMAT(__X2o, "0.00", "en-US") & " " & FORMAT(__Y2o, "0.00", "en-US")
+			                    & " L " & FORMAT(__X1i, "0.00", "en-US") & " " & FORMAT(__Y1i, "0.00", "en-US")
+			                    & " A " & FORMAT(__RadioInt, "0", "en-US") & " " & FORMAT(__RadioInt, "0", "en-US") & " 0 " & FORMAT(__GranArco, "0") & " 0 "
+			                    & FORMAT(__X2i, "0.00", "en-US") & " " & FORMAT(__Y2i, "0.00", "en-US")
+			                    & " Z' fill='" & __ColorActual & "'>"
+			                    & "<title>" & __EtiquetaActual & ": " & FORMAT(__TotalActual, "#,0")
+			                    & " (" & FORMAT(__FraccionFin - __FraccionInicio, "0.0%", "en-US") & ")</title>"
+			                    & "</path>",
+			                ""
+			            ),
+			        "",
+			        [@Orden],
+			        ASC
+			    )
+			
+			/* Valores: adentro en blanco si caben; si no, afuera con guia
+			   en codo, apiladas alternando lado para no colisionar */
+			VAR __ValoresHTML =
+			    CONCATENATEX(
+			        __ConFlags,
+			        VAR __OrdenActual = [@Orden]
+			        VAR __TotalActual = [@Total]
+			        VAR __Cabe = [@Cabe]
+			        VAR __TextoValor = FORMAT(__TotalActual, "#,0")
+			        VAR __ColorActual =
+			            SWITCH(
+			                MOD(__OrdenActual - 1, 8),
+			                0, "#1E4FAF", 1, "#4A78F6", 2, "#1198A5", 3, "#7B93D6",
+			                4, "#8FADF9", 5, "#5FC2CE", 6, "#2F5FC4", "#94A3B8"
+			            )
+			        VAR __ColorOscuro =
+			            SWITCH(
+			                __ColorActual,
+			                "#1E4FAF", "#163B85",
+			                "#4A78F6", "#2F5AC9",
+			                "#1198A5", "#0C707A",
+			                "#7B93D6", "#5B6FA8",
+			                "#8FADF9", "#6E8FD4",
+			                "#5FC2CE", "#3E93A0",
+			                "#2F5FC4", "#234896",
+			                "#94A3B8", "#6B7A8F",
+			                "#12346C"
+			            )
+			        VAR __AntesTotal = SUMX(FILTER(__ConFlags, [@Orden] < __OrdenActual), [@Total])
+			        VAR __FraccionInicio = DIVIDE(__AntesTotal, __TotalGeneral, 0)
+			        VAR __FraccionFin = DIVIDE(__AntesTotal + __TotalActual, __TotalGeneral, 0)
+			        VAR __FraccionSlice = __FraccionFin - __FraccionInicio
+			        VAR __AnguloMedio = ((__FraccionInicio + __FraccionFin) / 2) * 2 * PI() - PI() / 2
+			
+			        /* Posicion adentro */
+			        VAR __TXd = __CX + __RadioDentro * COS(__AnguloMedio)
+			        VAR __TYd = __CY + __RadioDentro * SIN(__AnguloMedio)
+			
+			        /* Orden entre las que salen afuera, para apilarlas */
+			        VAR __IndiceFuera =
+			            COUNTROWS(
+			                FILTER(
+			                    __ConFlags,
+			                    [@Orden] < __OrdenActual && [@Cabe] = 0
+			                )
+			            ) + 0
+			        VAR __IdxF = COALESCE(__IndiceFuera, 0)
+			        VAR __Lado = IF(MOD(__IdxF, 2) = 0, -1, 1)
+			        VAR __FilaF = INT(DIVIDE(__IdxF, 2, 0))
+			        VAR __LabelY = __CY - __RadioExt - 13 + (__FilaF * 12)
+			
+			        /* Punto de anclaje sobre el arco */
+			        VAR __PX = __CX + (__RadioExt + 1) * COS(__AnguloMedio)
+			        VAR __PY = __CY + (__RadioExt + 1) * SIN(__AnguloMedio)
+			        VAR __CodoX = __CX + __Lado * 9
+			        VAR __FinX = __CX + __Lado * 24
+			        VAR __TextoX = __CX + __Lado * 27
+			        VAR __Anchor = IF(__Lado = -1, "end", "start")
+			
+			        RETURN
+			            IF(
+			                __FraccionSlice <= 0,
+			                "",
+			                IF(
+			                    __Cabe = 1,
+			
+			                    "<text"
+			                        & " x='" & FORMAT(__TXd, "0.00", "en-US") & "'"
+			                        & " y='" & FORMAT(__TYd + 3, "0.00", "en-US") & "'"
+			                        & " text-anchor='middle'"
+			                        & " font-family='Segoe UI'"
+			                        & " font-size='11'"
+			                        & " font-weight='700'"
+			                        & " fill='#FFFFFF'>"
+			                        & __TextoValor
+			                        & "</text>",
+			
+			                    "<polyline points='"
+			                        & FORMAT(__PX, "0.00", "en-US") & "," & FORMAT(__PY, "0.00", "en-US") & " "
+			                        & FORMAT(__CodoX, "0.00", "en-US") & "," & FORMAT(__LabelY, "0.00", "en-US") & " "
+			                        & FORMAT(__FinX, "0.00", "en-US") & "," & FORMAT(__LabelY, "0.00", "en-US")
+			                        & "' fill='none' stroke='" & __ColorOscuro & "' stroke-width='1.1'></polyline>"
+			                        & "<circle cx='" & FORMAT(__PX, "0.00", "en-US") & "'"
+			                        & " cy='" & FORMAT(__PY, "0.00", "en-US") & "' r='1.7'"
+			                        & " fill='" & __ColorOscuro & "'></circle>"
+			                        & "<text"
+			                        & " x='" & FORMAT(__TextoX, "0.00", "en-US") & "'"
+			                        & " y='" & FORMAT(__LabelY + 3, "0.00", "en-US") & "'"
+			                        & " text-anchor='" & __Anchor & "'"
+			                        & " font-family='Segoe UI'"
+			                        & " font-size='10'"
+			                        & " font-weight='700'"
+			                        & " fill='" & __ColorOscuro & "'>"
+			                        & __TextoValor
+			                        & "</text>"
+			                )
+			            ),
+			        "",
+			        [@Orden],
+			        ASC
+			    )
+			
+			VAR __LeyendaHTML =
+			    CONCATENATEX(
+			        __ConFlags,
+			        VAR __OrdenActual = [@Orden]
+			        VAR __ColorActual =
+			            SWITCH(
+			                MOD(__OrdenActual - 1, 8),
+			                0, "#1E4FAF", 1, "#4A78F6", 2, "#1198A5", 3, "#7B93D6",
+			                4, "#8FADF9", 5, "#5FC2CE", 6, "#2F5FC4", "#94A3B8"
+			            )
+			        VAR __EtiquetaActual =
+			            IF(ISBLANK(tb_dim_status[status]) || tb_dim_status[status] = "", "(Sin estado)", tb_dim_status[status])
+			        RETURN
+			            "<div style='display:flex;align-items:center;gap:5px;font-size:10px;color:#53627C;white-space:nowrap;margin-bottom:6px;'>"
+			                & "<span style='width:9px;height:9px;min-width:9px;border-radius:2px;background:" & __ColorActual & ";display:inline-block;'></span>"
+			                & "<span style='min-width:0;overflow:hidden;text-overflow:ellipsis;' title='" & __EtiquetaActual & "'>" & __EtiquetaActual & "</span>"
+			                & "<span style='color:#8090AA;font-weight:600;flex:0 0 auto;'>(" & FORMAT(DIVIDE([@Total], __TotalGeneral, 0), "0%", "en-US") & ")</span>"
+			            & "</div>",
+			        "",
+			        [@Orden],
+			        ASC
+			    )
+			
+			RETURN
+			    "<div style='"
+			        & "height:100%;"
+			        & "max-height:100%;"
+			        & [DS_Contenedor_Estilo]
+			        & "'>"
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>Distribucion por Estado</div>"
+			        & IF(
+			            __SinDatos,
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			            "<div style='flex:1 1 auto;min-height:0;display:flex;flex-direction:row;align-items:stretch;justify-content:center;gap:8px;overflow:hidden;'>"
+			                & "<svg"
+			                    & " xmlns='http://www.w3.org/2000/svg'"
+			                    & " width='100%' height='100%'"
+			                    & " viewBox='0 0 180 180'"
+			                    & " preserveAspectRatio='xMidYMid meet'" & " style='flex:0 0 45%;display:block;'>"
+			                    & __SlicesHTML
+			                    & __ValoresHTML
+			                    & "<text x='" & FORMAT(__CX, "0", "en-US") & "' y='" & FORMAT(__CY + 3, "0", "en-US") & "'"
+			                        & " text-anchor='middle' font-family='Segoe UI' font-size='19' font-weight='700' fill='#12346C'>"
+			                        & FORMAT(__TotalGeneral, "#,0")
+			                    & "</text>"
+			                    & "<text x='" & FORMAT(__CX, "0", "en-US") & "' y='" & FORMAT(__CY + 15, "0", "en-US") & "'"
+			                        & " text-anchor='middle' font-family='Segoe UI' font-size='8' fill='#62708A'>Total</text>"
+			                & "</svg>"
+			                & "<div style='flex:1 1 auto;min-width:0;max-height:100%;display:flex;flex-direction:column;justify-content:center;overflow-y:auto;overflow-x:hidden;'>"
+			                    & __LeyendaHTML
+			                & "</div>"
+			            & "</div>"
+			        )
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: c3d4e5f6-0023-4a44-9c44-400000000023
+
+	measure HTML_Vision_Barras_Cliente =
+			
+			
+			VAR __Esp = SELECTEDVALUE(Tabla_Combinada[tipo_caso_especialista])
+			VAR __TipoDef = SELECTEDVALUE(Tabla_Combinada[tipo_definitivo])
+			VAR __Titulo =
+			    IF(
+			        NOT ISBLANK(__TipoDef) && __TipoDef <> "",
+			        __TipoDef & " por Cliente",
+			        IF(
+			            NOT ISBLANK(__Esp) && __Esp <> "",
+			            __Esp & " por Cliente",
+			            "Por Cliente"
+			        )
+			    )
+			
+			VAR __BaseCompleta =
+			    FILTER(
+			        ADDCOLUMNS(
+			            VALUES(Tabla_Combinada[contact_company]),
+			            "@Total", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@Total] > 0
+			    )
+			
+			VAR __TotalCategorias = COALESCE(COUNTROWS(__BaseCompleta), 0)
+			VAR __Base = TOPN(10, __BaseCompleta, [@Total], DESC)
+			VAR __SufijoTop =
+			    IF(
+			        __TotalCategorias > 10,
+			        " - Top 10 de " & FORMAT(__TotalCategorias, "#,0"),
+			        ""
+			    )
+			
+			VAR __Cantidad = COUNTROWS(__Base)
+			/* Alto cableado, convencion de esta plantilla. El grafico llena la tarjeta:
+			   el alto se reparte entre las categorias descontando el row-gap de 5 px.
+			   Con 10 categorias cae en el piso de 19 y queda como antes; con pocas,
+			   engorda en vez de dejar la mitad de la tarjeta en blanco. */
+			VAR __AltoContenedor = 180
+			VAR __AltoCuerpo = MAX(60, __AltoContenedor - 36)
+			VAR __AltoFila =
+			    MIN(
+			        46,
+			        MAX(
+			            19,
+			            INT(
+			                DIVIDE(
+			                    __AltoCuerpo - (MAX(__Cantidad, 1) - 1) * 5,
+			                    MAX(__Cantidad, 1),
+			                    0
+			                )
+			            )
+			        )
+			    )
+			VAR __AltoBarra = MAX(10, __AltoFila - 5)
+			VAR __ConflictoFiltro =
+			    VAR __EspEnScope =
+			        COALESCE(COUNTROWS(CALCULATETABLE(
+			            VALUES(Tabla_Combinada[tipo_caso_especialista]),
+			            REMOVEFILTERS(Calendario)
+			        )), 0)
+			    VAR __DefEnScope =
+			        COALESCE(COUNTROWS(CALCULATETABLE(
+			            VALUES(Tabla_Combinada[tipo_definitivo]),
+			            REMOVEFILTERS(Calendario)
+			        )), 0)
+			    RETURN
+			        __EspEnScope = 0 || __DefEnScope = 0
+			
+			VAR __SinDatos = __Cantidad = 0
+			VAR __MaxTotal = MAXX(__Base, [@Total])
+			
+			VAR __FilasHTML =
+			    CONCATENATEX(
+			        __Base,
+			        VAR __Etiqueta =
+			            IF(
+			                ISBLANK(Tabla_Combinada[contact_company]) || Tabla_Combinada[contact_company] = "",
+			                "(Sin cliente)",
+			                Tabla_Combinada[contact_company]
+			            )
+			        VAR __Total = [@Total]
+			        VAR __Pct = DIVIDE(__Total, MAX(__MaxTotal, 1), 0) * 100
+			        RETURN
+			            "<div title='" & __Etiqueta & ": " & FORMAT(__Total, "#,0") & "'"
+			                & " style='font-size:10px;color:#3D4D68;white-space:nowrap;"
+			                & "text-align:right;'>" & __Etiqueta & "</div>"
+			            & "<div style='height:" & FORMAT(__AltoBarra, "0") & "px;display:flex;min-width:0;background:#F1F4FA;"
+			                & "border-radius:2px;overflow:hidden;'>"
+			                & "<div style='width:" & FORMAT(__Pct, "0.00", "en-US") & "%;height:100%;"
+			                & "background:#4A78F6;'></div>"
+			            & "</div>"
+			            & "<div style='font-size:10px;font-weight:700;color:#12346C;text-align:right;"
+			                & "white-space:nowrap;'>" & FORMAT(__Total, "#,0") & "</div>",
+			        "",
+			        [@Total],
+			        DESC
+			    )
+			
+			RETURN
+			    "<div style='height:" & FORMAT(__AltoContenedor, "0") & "px;max-height:" & FORMAT(__AltoContenedor, "0") & "px;" & [DS_Contenedor_Estilo] & "'>"
+			        & "<div style='font-size:11px;font-weight:700;color:" & [DS_Color_TituloTexto]
+			            & ";height:16px;line-height:16px;margin-bottom:1px;flex:0 0 16px;'>" & __Titulo & __SufijoTop & "</div>"
+			        & IF(
+			            __SinDatos,
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & IF(__ConflictoFiltro, [DS_SinDatos_Conflicto], [DS_SinDatos_Mensaje]) & "</div>",
+			            "<div style='height:" & FORMAT(__AltoCuerpo, "0") & "px;overflow-y:auto;" & "overflow-x:auto;box-sizing:border-box;padding-right:2px;'>"
+			                & "<div style='display:grid;grid-template-columns:max-content minmax(40px,1fr) max-content;"
+			                & "column-gap:7px;row-gap:5px;align-items:center;width:100%;box-sizing:border-box;" & "height:100%;grid-auto-rows:" & FORMAT(__AltoFila, "0") & "px;align-content:center;'>"
+			                & __FilasHTML
+			                & "</div>"
+			            & "</div>"
+			        )
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos\Vision
+		lineageTag: e5f6a7b8-0002-4c66-9e66-600000000002
+
+	measure HTML_Vision_Combo_Volumetria =
+			
+			VAR __Meses =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(Tabla_Combinada, Calendario[Anio], Calendario[Mes]),
+			            "@Orden", Calendario[Anio] * 100 + Calendario[Mes],
+			            "@Etiqueta",
+			                SWITCH(
+			                    Calendario[Mes],
+			                    1, "ene", 2, "feb", 3, "mar", 4, "abr", 5, "may", 6, "jun",
+			                    7, "jul", 8, "ago", 9, "sep", 10, "oct", 11, "nov", 12, "dic", ""
+			                )
+			                    & " " & RIGHT(FORMAT(Calendario[Anio], "0000"), 2),
+			            "@Total", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@Total] > 0
+			    )
+			
+			VAR __Cantidad = COUNTROWS(__Meses)
+			VAR __Maximo = MAXX(__Meses, [@Total])
+			VAR __SinDatos = __Cantidad = 0 || ISBLANK(__Maximo)
+			
+			VAR __Grupos =
+			    FILTER(
+			        ADDCOLUMNS(
+			            VALUES(tb_dim_fte[grupo_soporte]),
+			            "@Color", [DS_Color_Grupo_Oscuro],
+			            "@OrdenGrupo", [DS_Orden_Grupo],
+			            "@ValorGrupo", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@ValorGrupo] > 0
+			    )
+			
+			VAR __ColumnasHTML =
+			    CONCATENATEX(
+			        __Meses,
+			        VAR __AnioAct = Calendario[Anio]
+			        VAR __MesAct = Calendario[Mes]
+			        VAR __TotalAct = [@Total]
+			        VAR __EtiqAct = [@Etiqueta]
+			        VAR __AlturaBarraPx = MAX(4, DIVIDE(__TotalAct, MAX(__Maximo, 1), 0) * 90)
+			        VAR __Segmentos =
+			            CONCATENATEX(
+			                __Grupos,
+			                VAR __GrupoAct = tb_dim_fte[grupo_soporte]
+			                VAR __ColorAct = [@Color]
+			                VAR __Valor =
+			                    CALCULATE(
+			                        DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			                        KEEPFILTERS(TREATAS({__AnioAct}, Calendario[Anio])),
+			                        KEEPFILTERS(TREATAS({__MesAct}, Calendario[Mes])),
+			                        KEEPFILTERS(TREATAS({__GrupoAct}, tb_dim_fte[grupo_soporte]))
+			                    )
+			                VAR __H = MAX(0, DIVIDE(__Valor, MAX(__TotalAct, 1), 0) * 100)
+			                RETURN
+			                    IF(
+			                        __Valor > 0,
+			                        "<div title='" & __EtiqAct & " | " & __GrupoAct & ": " & FORMAT(__Valor, "#,0") & "'"
+				                            & " style='width:100%;flex:" & FORMAT(__Valor, "0", "en-US") & " 1 0%;min-height:1px;background:"
+			                            & __ColorAct & ";box-sizing:border-box;'></div>",
+			                        ""
+			                    ),
+			                "",
+			                [@OrdenGrupo],
+			                DESC
+			            )
+			        RETURN
+			            "<div style='display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0;box-sizing:border-box;padding:0 3px;'>"
+			                & "<div style='font-size:10px;font-weight:700;color:#3D4D68;line-height:13px;'>"
+			                & FORMAT(__TotalAct, "#,0") & "</div>"
+			                & "<div style='width:66%;max-width:42px;min-width:10px;height:"
+			                & FORMAT(__AlturaBarraPx, "0", "en-US") & "px;flex:0 0 " & FORMAT(__AlturaBarraPx, "0", "en-US") & "px;display:flex;flex-direction:column;"
+			                & "justify-content:flex-end;overflow:hidden;border-radius:2px 2px 0 0;box-sizing:border-box;'>"
+			                & __Segmentos
+			                & "</div>"
+			                & "<div style='font-size:9px;color:#62708A;line-height:13px;white-space:nowrap;'>"
+			                & __EtiqAct & "</div>"
+			            & "</div>",
+			        "",
+			        [@Orden],
+			        ASC
+			    )
+			
+			VAR __LeyendaHTML =
+			    CONCATENATEX(
+			        __Grupos,
+			        VAR __G = IF(ISBLANK(tb_dim_fte[grupo_soporte]) || tb_dim_fte[grupo_soporte] = "", "(Sin asignar)", tb_dim_fte[grupo_soporte])
+			        RETURN
+			            "<span style='display:inline-flex;align-items:center;gap:3px;margin-right:10px;font-size:9px;"
+			                & "color:#53627C;white-space:nowrap;'>"
+			                & "<span style='width:8px;height:8px;border-radius:2px;background:" & [@Color] & ";display:inline-block;'></span>"
+			                & __G & "</span>",
+			        "",
+			        [@OrdenGrupo],
+			        ASC
+			    )
+			
+			RETURN
+			    "<div style='height:100%;max-height:100%;" & [DS_Contenedor_Estilo] & "'>"
+			        & "<div style='font-size:12px;font-weight:700;color:" & [DS_Color_TituloTexto]
+			            & ";height:18px;line-height:18px;flex:0 0 18px;'>Volumetria</div>"
+			        & IF(
+			            __SinDatos,
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			            "<div style='flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;'>"
+			                & "<div style='flex:1 1 auto;min-height:0;overflow-x:auto;overflow-y:hidden;'>"
+			                    & "<div style='display:grid;grid-template-columns:repeat("
+			                    & FORMAT(__Cantidad, "0") & ", minmax(40px,1fr));align-items:end;height:100%;"
+			                    & "width:" & IF(__Cantidad <= 22, "100%", FORMAT(__Cantidad * 34, "0") & "px") & ";"
+			                    & "box-sizing:border-box;'>"
+			                    & __ColumnasHTML
+			                    & "</div>"
+			                & "</div>"
+			                & "<div style='flex:0 0 15px;height:15px;display:flex;align-items:center;overflow:hidden;'>"
+			                    & __LeyendaHTML
+			                & "</div>"
+			            & "</div>"
+			        )
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos\Vision
+		lineageTag: e5f6a7b8-0006-4c66-9e66-600000000006
+
+	measure DS_TituloPagina_Estilo =
+			[DS_Fuente]
+				& "height:100%;width:100%;box-sizing:border-box;display:flex;align-items:center;"
+				& "justify-content:flex-start;font-size:19px;font-weight:700;color:#0F2D68;"
+				& "letter-spacing:0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: f6a7b8c9-0001-4d77-9f77-700000000001
+
+	measure HTML_Titulo_Volumetria = "<div style='" & [DS_TituloPagina_Estilo] & "'>" & [TITULO_SOC_VOLUMETRIA_GENERAL] & "<span style='" & [DS_NotaFiltro_Estilo] & "'>excluye cancelados</span>" & "</div>"
+		displayFolder: Diseno HTML\Titulos
+		lineageTag: f6a7b8c9-0002-4d77-9f77-700000000002
+
+	measure HTML_Rotulo_Filtros =
+			-- La franja izquierda tiene fondo azul oscuro: el blanco va directo,
+			-- sin relleno detras. No volver a ponerle fondo pensando que no contrasta.
+			VAR __Icono =
+			    "<svg width='15' height='15' viewBox='0 0 24 24' fill='none' style='flex-shrink:0;'>"
+			        & "<path d='M4 6h16M7.5 12h9M10.5 18h3' stroke='#FFFFFF' stroke-width='2.2'"
+			        & " stroke-linecap='round'></path></svg>"
+			
+			VAR __Contenedor =
+			    [DS_Fuente]
+			        & "height:100%;width:100%;box-sizing:border-box;display:flex;flex-direction:column;"
+			        & "justify-content:flex-end;padding:0 2px 2px 4px;background:transparent;"
+			
+			RETURN
+			    "<div style='" & __Contenedor & "'>"
+			        & "<div style='display:flex;flex-direction:row;align-items:center;gap:7px;'>"
+			            & __Icono
+			            & "<div style='font-size:14px;font-weight:700;color:#FFFFFF;"
+			            & "letter-spacing:1.1px;white-space:nowrap;'>FILTROS</div>"
+			        & "</div>"
+			        & "<div style='height:2px;width:100%;margin-top:5px;border-radius:1px;"
+			        & "background:rgba(255,255,255,0.35);'></div>"
+			    & "</div>"
+		displayFolder: Diseno HTML\Titulos
+		lineageTag: f6a7b8c9-0006-4d77-9f77-700000000006
+
+	measure DS_BadgeFiltro_Ini =
+			"<div style='height:100%;width:100%;box-sizing:border-box;display:flex;"
+				& "align-items:center;justify-content:center;"
+				& "background:rgba(255,255,255,0.16);border-radius:9px;'>"
+				& "<svg width='22' height='22' viewBox='0 0 24 24' fill='none'>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: a7b8c9d0-0001-4e88-9a88-800000000001
+
+	measure DS_BadgeFiltro_Fin = "</svg></div>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: a7b8c9d0-0002-4e88-9a88-800000000002
+
+	measure HTML_IconoFiltro_Anio =
+			[DS_BadgeFiltro_Ini]
+				& "<rect x='3.5' y='5' width='17' height='15' rx='2' stroke='#FFFFFF' stroke-width='1.8'></rect>"
+				& "<path d='M3.5 10h17M8 3.5v3M16 3.5v3' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0011-4e88-9a88-800000000011
+
+	measure HTML_IconoFiltro_Mes =
+			[DS_BadgeFiltro_Ini]
+				& "<rect x='3.5' y='5' width='17' height='15' rx='2' stroke='#FFFFFF' stroke-width='1.8'></rect>"
+				& "<path d='M3.5 10h17M8 3.5v3M16 3.5v3' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round'></path>"
+				& "<path d='M7 14h4M13 14h4' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0012-4e88-9a88-800000000012
+
+	measure HTML_IconoFiltro_Dia =
+			[DS_BadgeFiltro_Ini]
+				& "<rect x='3.5' y='5' width='17' height='15' rx='2' stroke='#FFFFFF' stroke-width='1.8'></rect>"
+				& "<path d='M3.5 10h17M8 3.5v3M16 3.5v3' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round'></path>"
+				& "<circle cx='12' cy='15' r='2.2' fill='#FFFFFF'></circle>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0013-4e88-9a88-800000000013
+
+	measure HTML_IconoFiltro_Estado =
+			[DS_BadgeFiltro_Ini]
+				& "<path d='M4 7l2 2 3.5-3.5M4 14l2 2 3.5-3.5' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'></path>"
+				& "<path d='M13 7.5h7M13 15.5h7' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0014-4e88-9a88-800000000014
+
+	measure DS_SinDatos_Conflicto = "Este cuadro tiene el tipo de caso fijado. Los segmentadores de Tipo o Especialidad lo estan excluyendo: deseleccionalos para verlo."
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0015-4a11-9a11-000000000015
+
+	measure DS_NotaFiltro_Estilo =
+			"display:inline-block;margin-left:12px;padding:2px 9px;border-radius:10px;"
+				& "background:rgba(30,79,175,0.09);color:#5B6B8C;font-size:10px;font-weight:600;"
+				& "letter-spacing:0.3px;vertical-align:middle;"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: 1a2b3c4d-0016-4a11-9a11-000000000016
+
+	/// ================================================================
+	/// PALETA DE SERIES CENTRALIZADA
+	/// Los motores toman el color n con PATHITEM([DS_Paleta], MOD(orden - 1, 8) + 1).
+	/// Cambiar esta sola medida cambia el color de todas las series del informe.
+	/// Viene de la migracion de Colombia: reemplaza al SWITCH de 8 colores que
+	/// antes se repetia dentro de cada motor.
+	/// ================================================================
+	measure DS_Paleta = "#0F2D68|#1E4FAF|#4A78F6|#1198A5|#7B93D6|#8FADF9|#5FC2CE|#2F5FC4"
+		displayFolder: Diseno HTML\Tokens
+		lineageTag: b1a70000-9001-4000-9000-000000000001
+
+	/// ================================================================
+	/// MODELO NUEVO 1: GAUGE SEMICIRCULAR
+	/// Arco de 180 grados en SVG, misma matematica que la dona pero con un solo
+	/// tramo: angulo = PI * (1 - valor), punto final en cx + r*COS(ang) y
+	/// cy - r*SIN(ang), con sweep-flag = 1. El viewBox se alinea a los pixeles
+	/// reales para que el texto no se comprima.
+	/// Para reutilizarlo: cambiar el numerador y el denominador de __V, y el titulo.
+	/// ================================================================
+	measure HTML_Gauge =
+			VAR __Total = DISTINCTCOUNT(Tabla_Combinada[incident_number])
+			VAR __Cerrados =
+			    CALCULATE(
+			        DISTINCTCOUNT(Tabla_Combinada[incident_number]),
+			        KEEPFILTERS(TREATAS({ "Cerrado" }, tb_dim_status[status]))
+			    )
+			VAR __V = MIN(MAX(COALESCE(DIVIDE(__Cerrados, __Total, 0), 0), 0), 1)
+			VAR __W = 200
+			VAR __H = 118
+			VAR __CX = __W * 0.5
+			VAR __CY = 96
+			VAR __R = 78
+			VAR __Grosor = 18
+			VAR __Ang = PI() * (1 - __V)
+			VAR __X2 = __CX + __R * COS(__Ang)
+			VAR __Y2 = __CY - __R * SIN(__Ang)
+			VAR __Color = PATHITEM([DS_Paleta], 2)
+			VAR __Pista =
+			    "<path d='M " & FORMAT(__CX - __R, "0.0", "en-US") & " " & FORMAT(__CY, "0.0", "en-US")
+			        & " A " & FORMAT(__R, "0.0", "en-US") & " " & FORMAT(__R, "0.0", "en-US")
+			        & " 0 0 1 " & FORMAT(__CX + __R, "0.0", "en-US") & " " & FORMAT(__CY, "0.0", "en-US") & "'"
+			        & " fill='none' stroke='#E4E9EF' stroke-width='" & FORMAT(__Grosor, "0") & "' stroke-linecap='round'></path>"
+			VAR __Arco =
+			    IF(
+			        __V <= 0,
+			        "",
+			        "<path d='M " & FORMAT(__CX - __R, "0.0", "en-US") & " " & FORMAT(__CY, "0.0", "en-US")
+			            & " A " & FORMAT(__R, "0.0", "en-US") & " " & FORMAT(__R, "0.0", "en-US")
+			            & " 0 0 1 " & FORMAT(__X2, "0.0", "en-US") & " " & FORMAT(__Y2, "0.0", "en-US") & "'"
+			            & " fill='none' stroke='" & __Color & "' stroke-width='" & FORMAT(__Grosor, "0") & "' stroke-linecap='round'></path>"
+			    )
+			RETURN
+			    "<div style='height:100%;max-height:100%;" & [DS_Contenedor_Estilo] & "'>"
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>Casos cerrados sobre el total</div>"
+			        & "<div style='flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;'>"
+			            & "<div style='flex:0 0 " & FORMAT(__H, "0") & "px;height:" & FORMAT(__H, "0") & "px;'>"
+			                & "<svg xmlns='http://www.w3.org/2000/svg' width='" & FORMAT(__W, "0") & "' height='" & FORMAT(__H, "0") & "'"
+			                    & " viewBox='0 0 " & FORMAT(__W, "0") & " " & FORMAT(__H, "0") & "' style='display:block;'>"
+			                    & __Pista
+			                    & __Arco
+			                    & "<text x='" & FORMAT(__CX, "0") & "' y='" & FORMAT(__CY - 22, "0") & "' text-anchor='middle'"
+			                        & " font-family='Segoe UI' font-size='30' font-weight='700' fill='" & [DS_Color_TituloTexto] & "'>"
+			                        & FORMAT(__V, "0.0%", "en-US")
+			                    & "</text>"
+			                    & "<text x='" & FORMAT(__CX - __R, "0") & "' y='" & FORMAT(__CY + 13, "0") & "' text-anchor='middle' font-family='Segoe UI' font-size='9' fill='#5B6B8C'>0%</text>"
+			                    & "<text x='" & FORMAT(__CX + __R, "0") & "' y='" & FORMAT(__CY + 13, "0") & "' text-anchor='middle' font-family='Segoe UI' font-size='9' fill='#5B6B8C'>100%</text>"
+			                & "</svg>"
+			            & "</div>"
+			            & "<div style='font-size:9px;color:#5B6B8C;padding-top:2px;'>" & FORMAT(__Cerrados, "#,0") & " de " & FORMAT(__Total, "#,0") & " casos</div>"
+			        & "</div>"
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: b1a70000-9001-4000-9000-000000000002
+
+	/// ================================================================
+	/// MODELO NUEVO 2: MATRIZ CON MEDIDAS COMO COLUMNAS
+	/// Filas = una columna de dimension. Columnas = N medidas.
+	/// Es la otra forma posible: los demas motores parten UNA medida por una
+	/// dimension; este pone VARIAS medidas una al lado de la otra.
+	/// Para reutilizarlo: cambiar la columna del SUMMARIZE y las medidas del ADDCOLUMNS.
+	/// ================================================================
+	measure HTML_Matriz_Medidas =
+			VAR __Filas =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(Tabla_Combinada, tb_dim_status[status]),
+			            "@Total", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number])),
+			            "@Dias", CALCULATE(AVERAGE(Tabla_Combinada[duracion_resolucion_soc_dias]))
+			        ),
+			        [@Total] > 0
+			    )
+			VAR __Cantidad = COALESCE(COUNTROWS(__Filas), 0)
+			VAR __TotalGeneral = SUMX(__Filas, [@Total])
+			VAR __Encabezado =
+			    "<div style='font-size:9px;font-weight:700;color:#FFFFFF;background:" & [DS_Color_TituloTexto] & ";padding:3px 6px;position:sticky;top:0;border-radius:4px 0 0 0;box-sizing:border-box;white-space:nowrap;'>ESTADO</div>"
+			    & "<div style='font-size:9px;font-weight:700;color:#FFFFFF;background:" & [DS_Color_TituloTexto] & ";padding:3px 6px;position:sticky;top:0;text-align:right;box-sizing:border-box;'>CASOS</div>"
+			    & "<div style='font-size:9px;font-weight:700;color:#FFFFFF;background:" & [DS_Color_TituloTexto] & ";padding:3px 6px;position:sticky;top:0;text-align:right;box-sizing:border-box;'>%</div>"
+			    & "<div style='font-size:9px;font-weight:700;color:#FFFFFF;background:" & [DS_Color_TituloTexto] & ";padding:3px 6px;position:sticky;top:0;text-align:right;border-radius:0 4px 0 0;box-sizing:border-box;'>DIAS</div>"
+			VAR __Cuerpo =
+			    CONCATENATEX(
+			        __Filas,
+			        VAR __Etq = IF(ISBLANK(tb_dim_status[status]) || tb_dim_status[status] = "", "(Sin dato)", tb_dim_status[status])
+			        VAR __T = [@Total]
+			        VAR __D = [@Dias]
+			        VAR __P = DIVIDE(__T, __TotalGeneral, 0)
+			        RETURN
+			            "<div title='" & __Etq & "' style='font-size:10px;font-weight:600;color:" & [DS_Color_TituloTexto] & ";padding:3px 6px;white-space:nowrap;border-bottom:1px solid #DCE6F5;box-sizing:border-box;'>" & __Etq & "</div>"
+			            & "<div style='font-size:11px;font-weight:700;color:" & [DS_Color_TituloTexto] & ";padding:3px 6px;text-align:right;border-bottom:1px solid #DCE6F5;box-sizing:border-box;'>" & FORMAT(__T, "#,0") & "</div>"
+			            & "<div style='font-size:10px;font-weight:600;color:#5B6B8C;padding:3px 6px;text-align:right;border-bottom:1px solid #DCE6F5;box-sizing:border-box;'>" & FORMAT(__P, "0.0%", "en-US") & "</div>"
+			            & "<div style='font-size:10px;font-weight:600;color:#5B6B8C;padding:3px 6px;text-align:right;border-bottom:1px solid #DCE6F5;box-sizing:border-box;'>" & FORMAT(__D, "0.0", "en-US") & "</div>",
+			        "",
+			        [@Total],
+			        DESC
+			    )
+			RETURN
+			    "<div style='height:100%;max-height:100%;" & [DS_Contenedor_Estilo] & "'>"
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>Estado &nbsp;&middot;&nbsp; " & FORMAT(__TotalGeneral, "#,0") & " casos</div>"
+			        & IF(
+			            __Cantidad = 0,
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			            "<div style='flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:auto;box-sizing:border-box;'>"
+			                & "<div style='display:grid;min-width:max-content;grid-template-columns:max-content minmax(48px,1fr) minmax(44px,1fr) minmax(44px,1fr);'>"
+			                    & __Encabezado
+			                    & __Cuerpo
+			                & "</div>"
+			            & "</div>"
+			        )
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: b1a70000-9001-4000-9000-000000000003
+
+	/// ================================================================
+	/// MODELO NUEVO 3: CHIPS DE REFERENCIA
+	/// Lista de valores como pildoras, para contexto que no necesita un grafico.
+	/// Nacio de resolver una pagina de tooltip: los visuales HTML no las disparan,
+	/// asi que el contenido pasa a mostrarse a la vista.
+	/// Para reutilizarlo: cambiar la columna del SUMMARIZE y el titulo.
+	/// ================================================================
+	measure HTML_Chips =
+			VAR __Base =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(Tabla_Combinada, Tabla_Combinada[categorization_tier_2]),
+			            "@Total", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@Total] > 0
+			    )
+			VAR __Cantidad = COALESCE(COUNTROWS(__Base), 0)
+			VAR __Chips =
+			    CONCATENATEX(
+			        __Base,
+			        VAR __Etq = IF(ISBLANK(Tabla_Combinada[categorization_tier_2]) || Tabla_Combinada[categorization_tier_2] = "", "(Sin dato)", Tabla_Combinada[categorization_tier_2])
+			        RETURN
+			            "<span style='display:inline-flex;align-items:center;gap:5px;background:#EAF0FB;border:1px solid "
+			            & [DS_Color_Borde]
+			            & ";border-radius:10px;padding:1px 9px;margin-right:5px;margin-bottom:3px;font-size:10px;font-weight:600;color:"
+			            & [DS_Color_TituloTexto] & ";white-space:nowrap;'>"
+			                & __Etq
+			                & "<span style='font-weight:400;color:#5B6B8C;'>" & FORMAT([@Total], "#,0") & "</span>"
+			            & "</span>",
+			        "",
+			        [@Total],
+			        DESC
+			    )
+			RETURN
+			    "<div style='height:100%;max-height:100%;" & [DS_Contenedor_Estilo] & "'>"
+			        & "<div style='font-size:10px;font-weight:700;color:#5B6B8C;flex:0 0 14px;height:14px;line-height:14px;'>CATEGORIAS PRESENTES</div>"
+			        & IF(
+			            __Cantidad = 0,
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			            "<div style='flex:1 1 auto;min-height:0;display:flex;align-items:center;flex-wrap:wrap;overflow:hidden;'>" & __Chips & "</div>"
+			        )
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: b1a70000-9001-4000-9000-000000000004
+
+	measure DS_Icono_EnCurso = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' style='flex-shrink:0;'><circle cx='12' cy='12' r='9' stroke='#1E4FAF' stroke-width='1.8'/><path d='M9 8l7 4-7 4V8z' fill='#4A78F6'/></svg>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: b1a70000-9101-4000-9000-000000000001
+
+	measure DS_Icono_Asignado = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' style='flex-shrink:0;'><circle cx='12' cy='8' r='3' stroke='#1E4FAF' stroke-width='1.8'/><path d='M5 20c.7-4 3-6 7-6s6.3 2 7 6' stroke='#1E4FAF' stroke-width='1.8' stroke-linecap='round'/></svg>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: b1a70000-9102-4000-9000-000000000002
+
+	measure DS_Icono_Pendiente = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' style='flex-shrink:0;'><circle cx='12' cy='12' r='9' stroke='#1E4FAF' stroke-width='1.8'/><path d='M12 7v5l3 2' stroke='#F0883E' stroke-width='2' stroke-linecap='round'/></svg>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: b1a70000-9103-4000-9000-000000000003
+
+	measure DS_Icono_Cerrado = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' style='flex-shrink:0;'><circle cx='12' cy='12' r='9' stroke='#16A34A' stroke-width='1.8'/><path d='M8 12l2.5 2.5L16 9' stroke='#16A34A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: b1a70000-9104-4000-9000-000000000004
+
+	measure DS_Icono_Cancelado = "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' style='flex-shrink:0;'><circle cx='12' cy='12' r='9' stroke='#DC2626' stroke-width='1.8'/><path d='M9 9l6 6m0-6l-6 6' stroke='#DC2626' stroke-width='2' stroke-linecap='round'/></svg>"
+		displayFolder: Diseno HTML\Tokens\Iconos
+		lineageTag: b1a70000-9105-4000-9000-000000000005
+
+	measure HTML_IconoFiltro_Agente =
+			[DS_BadgeFiltro_Ini]
+				& "<circle cx='12' cy='8' r='3.4' stroke='#FFFFFF' stroke-width='1.8'></circle>"
+				& "<path d='M5.5 20c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0015-4e88-9a88-800000000015
+
+	measure HTML_IconoFiltro_Company =
+			[DS_BadgeFiltro_Ini]
+				& "<rect x='4' y='4' width='11' height='16' rx='1.5' stroke='#FFFFFF' stroke-width='1.8'></rect>"
+				& "<path d='M15 9h5v11h-5' stroke='#FFFFFF' stroke-width='1.8' stroke-linejoin='round'></path>"
+				& "<path d='M7.5 8h4M7.5 12h4M7.5 16h4' stroke='#FFFFFF' stroke-width='1.6' stroke-linecap='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0016-4e88-9a88-800000000016
+
+	measure HTML_IconoFiltro_Categoria =
+			[DS_BadgeFiltro_Ini]
+				& "<path d='M11.5 3.5H5a1.5 1.5 0 00-1.5 1.5v6.5L13 20.5l7.5-7.5L11.5 3.5z' stroke='#FFFFFF' stroke-width='1.8' stroke-linejoin='round'></path>"
+				& "<circle cx='8' cy='8' r='1.6' fill='#FFFFFF'></circle>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0017-4e88-9a88-800000000017
+
+	measure HTML_IconoFiltro_Hora =
+			[DS_BadgeFiltro_Ini]
+				& "<circle cx='12' cy='12' r='8.5' stroke='#FFFFFF' stroke-width='1.8'></circle>"
+				& "<path d='M12 7v5.3l3.4 2' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0018-4e88-9a88-800000000018
+
+	measure HTML_IconoFiltro_Especialidad =
+			[DS_BadgeFiltro_Ini]
+				& "<path d='M12 3.5l7 3v5.5c0 4-3 7.2-7 8.5-4-1.3-7-4.5-7-8.5V6.5l7-3z' stroke='#FFFFFF' stroke-width='1.8' stroke-linejoin='round'></path>"
+				& "<path d='M9 12l2 2 4-4' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0019-4e88-9a88-800000000019
+
+	measure HTML_IconoFiltro_Turno =
+			[DS_BadgeFiltro_Ini]
+				& "<path d='M19.5 12a7.5 7.5 0 10-2.7 5.8' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round'></path>"
+				& "<path d='M19.5 7.5v4.5h-4.5' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0020-4e88-9a88-800000000020
+
+	measure HTML_IconoFiltro_Tipo =
+			[DS_BadgeFiltro_Ini]
+				& "<path d='M4 6h16M7.5 12h9M10.5 18h3' stroke='#FFFFFF' stroke-width='2.1' stroke-linecap='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-0021-4e88-9a88-800000000021
+
+	/// ================================================================
+	/// MODELO NUEVO: COLUMNAS AGRUPADAS CON SERIES POR MEDIDA
+	/// Es el modelo que faltaba: las series NO salen de una dimension, son N
+	/// medidas distintas puestas lado a lado sobre el mismo eje de periodo.
+	/// El apilado (HTML_Volumetria_Apilado) parte UNA medida por una dimension;
+	/// este compara VARIAS medidas entre si.
+	///
+	/// Para reutilizarlo: cambiar las dos medidas de @S1 y @S2, sus nombres en
+	/// __Nombre1/__Nombre2 y el titulo. Para una tercera serie se duplica el
+	/// bloque de la barra (misma forma que el motor de lineas, que lleva 3).
+	///
+	/// Alturas en PX, nunca en %: height:100% es inerte en el visual HTML Content
+	/// y un porcentaje contra un alto indefinido colapsa la barra a cero.
+	/// ================================================================
+	measure HTML_Barras_Agrupadas =
+			VAR __Nombre1 = "Aperturados"
+			VAR __Nombre2 = "Cerrados"
+			VAR __Color1 = PATHITEM([DS_Paleta], 2)
+			VAR __Color2 = PATHITEM([DS_Paleta], 4)
+
+			/* ---------- 1. periodos visibles, con las dos medidas ---------- */
+			VAR __Categorias =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(
+			                Tabla_Combinada,
+			                Calendario[Anio],
+			                Calendario[Mes]
+			            ),
+			            "@Orden", Calendario[Anio] * 100 + Calendario[Mes],
+			            "@Etiqueta",
+			                SWITCH(
+			                    Calendario[Mes],
+			                    1, "ene", 2, "feb", 3, "mar", 4, "abr",
+			                    5, "may", 6, "jun", 7, "jul", 8, "ago",
+			                    9, "sep", 10, "oct", 11, "nov", 12, "dic",
+			                    ""
+			                )
+			                    & " "
+			                    & RIGHT(FORMAT(Calendario[Anio], "0000"), 2),
+			            "@S1", CALCULATE([Aperturados]),
+			            "@S2", CALCULATE([Cerrados])
+			        ),
+			        COALESCE([@S1], 0) > 0 || COALESCE([@S2], 0) > 0
+			    )
+			VAR __CantidadCategorias = COALESCE(COUNTROWS(__Categorias), 0)
+			VAR __Maximo =
+			    MAXX(
+			        __Categorias,
+			        MAX(COALESCE([@S1], 0), COALESCE([@S2], 0))
+			    )
+			VAR __SinDatos =
+			    __CantidadCategorias = 0 || ISBLANK(__Maximo) || __Maximo = 0
+			/* Cuantos periodos caben de verdad. El ancho va cableado porque en esta
+			   plantilla las medidas llevan su geometria en el DAX; si se cambia el
+			   ancho del visual hay que cambiarlo aqui. En un informe con tabla
+			   desconectada de anchos se reemplaza por SELECTEDVALUE. */
+			VAR __AnchoContenedor = 400
+			VAR __AnchoMinPeriodo = 63
+			VAR __AnchoUtil = MAX(120, __AnchoContenedor - 22)
+			VAR __Caben = MAX(1, INT(DIVIDE(__AnchoUtil, __AnchoMinPeriodo, 0)))
+			VAR __Entran = __CantidadCategorias <= __Caben
+			/* Con scroll horizontal la barra de desplazamiento se come los ultimos
+			   ~16 px de la caja y tapa la fila de etiquetas del eje X. Se le reserva
+			   el espacio, y la caja lleva altura explicita: con alto automatico el
+			   scrollbar recorta el contenido en vez de agrandar la caja. */
+			VAR __EspacioScroll = IF(__Entran, 0, 16)
+			VAR __AltoPlot = 150 - __EspacioScroll
+			VAR __AltoMaxBarra = __AltoPlot - 14
+			VAR __AltoCaja = __AltoPlot + 25 + __EspacioScroll
+
+			/* ---------- 2. una columna por periodo, con las dos barras ---------- */
+			VAR __ColumnasHTML =
+			    CONCATENATEX(
+			        __Categorias,
+			        VAR __Etq = [@Etiqueta]
+			        VAR __V1 = COALESCE([@S1], 0)
+			        VAR __V2 = COALESCE([@S2], 0)
+			        VAR __H1 = MAX(2, DIVIDE(__V1, MAX(__Maximo, 1), 0) * __AltoMaxBarra)
+			        VAR __H2 = MAX(2, DIVIDE(__V2, MAX(__Maximo, 1), 0) * __AltoMaxBarra)
+			        VAR __Barra1 =
+			            "<div title='" & __Etq & " | " & __Nombre1 & ": " & FORMAT(__V1, "#,0") & "'"
+			                & " style='position:relative;flex:1 1 0;max-width:26px;min-width:5px;"
+			                & "height:" & FORMAT(__H1, "0", "en-US") & "px;"
+			                & "background:" & __Color1 & ";border-radius:3px 3px 0 0;"
+			                & "box-sizing:border-box;'>"
+			                & "<div style='position:absolute;left:50%;bottom:100%;"
+			                & "transform:translateX(-50%);margin-bottom:2px;font-size:9px;"
+			                & "font-weight:600;color:" & __Color1 & ";white-space:nowrap;'>"
+			                & FORMAT(__V1, "#,0")
+			                & "</div>"
+			            & "</div>"
+			        VAR __Barra2 =
+			            "<div title='" & __Etq & " | " & __Nombre2 & ": " & FORMAT(__V2, "#,0") & "'"
+			                & " style='position:relative;flex:1 1 0;max-width:26px;min-width:5px;"
+			                & "height:" & FORMAT(__H2, "0", "en-US") & "px;"
+			                & "background:" & __Color2 & ";border-radius:3px 3px 0 0;"
+			                & "box-sizing:border-box;'>"
+			                & "<div style='position:absolute;left:50%;bottom:100%;"
+			                & "transform:translateX(-50%);margin-bottom:2px;font-size:9px;"
+			                & "font-weight:600;color:" & __Color2 & ";white-space:nowrap;'>"
+			                & FORMAT(__V2, "#,0")
+			                & "</div>"
+			            & "</div>"
+			        RETURN
+			            "<div style='min-width:0;display:flex;flex-direction:column;"
+			                & "align-items:center;box-sizing:border-box;padding:0 4px;'>"
+			                & "<div style='width:100%;height:" & FORMAT(__AltoPlot, "0") & "px;"
+			                & "flex:0 0 " & FORMAT(__AltoPlot, "0") & "px;display:flex;"
+			                & "flex-direction:row;align-items:flex-end;justify-content:center;"
+			                & "gap:3px;border-bottom:1px solid " & [DS_Color_Divisor] & ";"
+			                & "box-sizing:border-box;'>"
+			                    & __Barra1
+			                    & __Barra2
+			                & "</div>"
+			                & "<div style='height:25px;padding-top:6px;box-sizing:border-box;"
+			                & "font-size:10px;font-weight:500;color:"
+			                & [DS_Color_TextoSecundario]
+			                & ";white-space:nowrap;text-align:center;'>"
+			                & __Etq
+			                & "</div>"
+			            & "</div>",
+			        "",
+			        [@Orden],
+			        ASC
+			    )
+
+			/* ---------- 3. leyenda ---------- */
+			VAR __LeyendaHTML =
+			    "<span style='display:inline-flex;align-items:center;gap:6px;margin-right:16px;"
+			        & "font-size:11px;color:" & [DS_Color_TextoSecundario] & ";white-space:nowrap;'>"
+			        & "<span style='width:9px;height:9px;border-radius:3px;background:"
+			        & __Color1 & ";display:inline-block;'></span>"
+			        & __Nombre1
+			    & "</span>"
+			    & "<span style='display:inline-flex;align-items:center;gap:6px;"
+			        & "font-size:11px;color:" & [DS_Color_TextoSecundario] & ";white-space:nowrap;'>"
+			        & "<span style='width:9px;height:9px;border-radius:3px;background:"
+			        & __Color2 & ";display:inline-block;'></span>"
+			        & __Nombre2
+			    & "</span>"
+
+			/* ---------- 4. ancho: si no entran, scroll y avisarlo en el titulo ---------- */
+			VAR __AnchoInterno =
+			    IF(
+			        __Entran,
+			        "100%",
+			        FORMAT(__CantidadCategorias * (__AnchoMinPeriodo + 13), "0") & "px"
+			    )
+			VAR __ColumnasGrid =
+			    "repeat(" & FORMAT(__CantidadCategorias, "0") & ", minmax("
+			        & IF(__Entran, "0", FORMAT(__AnchoMinPeriodo, "0") & "px") & ", 1fr))"
+
+			RETURN
+			    "<div style='height:100%;max-height:100%;" & [DS_Contenedor_Estilo] & "'>"
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>"
+			            & __Nombre1 & " vs " & __Nombre2
+			            & IF(
+			                NOT __Entran,
+			                " - " & FORMAT(__CantidadCategorias, "#,0")
+			                    & " periodos (desplazar para ver todos)",
+			                ""
+			            )
+			        & "</div>"
+			        & IF(
+			            __SinDatos,
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			            "<div style='width:100%;height:" & FORMAT(__AltoCaja, "0") & "px;"
+			                & "overflow-x:auto;overflow-y:hidden;box-sizing:border-box;'>"
+			                & "<div style='width:" & __AnchoInterno & ";display:grid;"
+			                & "grid-template-columns:" & __ColumnasGrid & ";"
+			                & "align-items:end;column-gap:4px;box-sizing:border-box;'>"
+			                    & __ColumnasHTML
+			                & "</div>"
+			            & "</div>"
+			            & "<div style='display:flex;align-items:center;flex-wrap:wrap;"
+			                & "flex:0 0 26px;height:26px;padding-top:2px;border-top:1px solid "
+			                & [DS_Color_Divisor] & ";box-sizing:border-box;overflow:hidden;'>"
+			                & __LeyendaHTML
+			            & "</div>"
+			        )
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: b1a70000-9004-4000-9000-000000000001
+
+	column Column1
+		lineageTag: ae78e056-9e0e-4ce8-9fa5-33a23c78a09b
+		isNameInferred
+		sourceColumn: [Column1]
+
+	partition Medidas = calculated
+		mode: import
+		source = ROW("Column1", 1)
+
+	annotation PBI_ResultType = Table
+

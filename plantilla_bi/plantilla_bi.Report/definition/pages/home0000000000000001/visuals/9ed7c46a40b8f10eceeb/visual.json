@@ -1,0 +1,16 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "9ed7c46a40b8f10eceeb",
+  "position": {
+    "x": 420,
+    "y": 250,
+    "z": 2000,
+    "height": 126,
+    "width": 149,
+    "tabOrder": 2000
+  },
+  "visualGroup": {
+    "displayName": "Hexágono Catálogo",
+    "groupMode": "ScaleMode"
+  }
+}

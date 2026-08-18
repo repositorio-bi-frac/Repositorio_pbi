@@ -1,0 +1,41 @@
+/// DIMENSION DE ESTADO ficticia. Los cuatro estados coinciden con id_status
+/// de Tabla_Combinada (MOD(i,4)+1). Si se agregan estados hay que revisar la
+/// paleta: los motores toman el color con PATHITEM sobre DS_Paleta, que cicla cada 8.
+table tb_dim_status
+	lineageTag: b1a70000-3002-4000-9000-000000000001
+
+	column id_status
+		dataType: int64
+		formatString: 0
+		lineageTag: b1a70000-3002-4000-9000-000000000101
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [id_status]
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: b1a70000-3002-4000-9000-000000000102
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [status]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition tb_dim_status = calculated
+		mode: import
+		source =
+				DATATABLE(
+				    "id_status", INTEGER,
+				    "status", STRING,
+				    {
+				        {1, "Cerrado"},
+				        {2, "Asignado"},
+				        {3, "Progreso"},
+				        {4, "Pendiente"}
+				    }
+				)
+
+	annotation PBI_ResultType = Table
+

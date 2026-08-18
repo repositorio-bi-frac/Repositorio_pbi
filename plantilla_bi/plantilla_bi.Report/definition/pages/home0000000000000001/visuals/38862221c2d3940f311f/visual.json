@@ -1,0 +1,16 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "38862221c2d3940f311f",
+  "position": {
+    "x": 711,
+    "y": 250,
+    "z": 1000,
+    "height": 126,
+    "width": 149,
+    "tabOrder": 1000
+  },
+  "visualGroup": {
+    "displayName": "Hexágono Modelo de Página",
+    "groupMode": "ScaleMode"
+  }
+}

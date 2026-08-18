@@ -1,0 +1,306 @@
+/// TABLA DE HECHOS FICTICIA de la plantilla.
+/// 600 filas generadas con GENERATESERIES y aritmetica modular, asi que son
+/// DETERMINISTAS: el equipo ve siempre los mismos numeros y las capturas coinciden.
+/// Conserva los nombres de columna del informe SOC para que las 99 medidas del
+/// catalogo funcionen sin tocar ni una. Al migrar un informe real, lo que se
+/// reemplaza es esta tabla; los motores se repuntan a las columnas del destino.
+table Tabla_Combinada
+	lineageTag: b1a70000-3001-4000-9000-000000000001
+
+	column incident_number
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000101
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [incident_number]
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_y_hora_de_notificacion
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:nn
+		lineageTag: b1a70000-3001-4000-9000-000000000102
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [fecha_y_hora_de_notificacion]
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_y_hora_de_cierre
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:nn
+		lineageTag: b1a70000-3001-4000-9000-000000000103
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [fecha_y_hora_de_cierre]
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_status
+		dataType: int64
+		formatString: 0
+		lineageTag: b1a70000-3001-4000-9000-000000000104
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [id_status]
+
+		annotation SummarizationSetBy = Automatic
+
+	column assignee
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000105
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [assignee]
+
+		annotation SummarizationSetBy = Automatic
+
+	column submitter
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000106
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [submitter]
+
+		annotation SummarizationSetBy = Automatic
+
+	column assigned_group
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000107
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [assigned_group]
+
+		annotation SummarizationSetBy = Automatic
+
+	column contact_company
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000108
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [contact_company]
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo_definitivo
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000109
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [tipo_definitivo]
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo_caso_especialista
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000110
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [tipo_caso_especialista]
+
+		annotation SummarizationSetBy = Automatic
+
+	column categorization_tier_1
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000111
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [categorization_tier_1]
+
+		annotation SummarizationSetBy = Automatic
+
+	column categorization_tier_2
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000112
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [categorization_tier_2]
+
+		annotation SummarizationSetBy = Automatic
+
+	column categorization_tier_3
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000113
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [categorization_tier_3]
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000114
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [description]
+
+		annotation SummarizationSetBy = Automatic
+
+	column duracion_resolucion_soc_dias
+		dataType: double
+		lineageTag: b1a70000-3001-4000-9000-000000000115
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [duracion_resolucion_soc_dias]
+
+		annotation SummarizationSetBy = Automatic
+
+	column cumplimiento_sla_asignacion
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000116
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [cumplimiento_sla_asignacion]
+
+		annotation SummarizationSetBy = Automatic
+
+	column hora_solicitud
+		dataType: int64
+		formatString: 0
+		lineageTag: b1a70000-3001-4000-9000-000000000117
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [hora_solicitud]
+
+		annotation SummarizationSetBy = Automatic
+
+	column turno
+		dataType: string
+		lineageTag: b1a70000-3001-4000-9000-000000000118
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [turno]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Clave de la relacion ACTIVA con Calendario. Fecha sin hora: DATE(Y,M,D).
+	column fecha_apertura_dia = IF(ISBLANK(Tabla_Combinada[fecha_y_hora_de_notificacion]), BLANK(), DATE(YEAR(Tabla_Combinada[fecha_y_hora_de_notificacion]), MONTH(Tabla_Combinada[fecha_y_hora_de_notificacion]), DAY(Tabla_Combinada[fecha_y_hora_de_notificacion])))
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: b1a70000-3001-4000-9000-000000000119
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Clave de la relacion INACTIVA con Calendario. La usa [Cerrados] con USERELATIONSHIP.
+	column fecha_cierre_dia = IF(ISBLANK(Tabla_Combinada[fecha_y_hora_de_cierre]), BLANK(), DATE(YEAR(Tabla_Combinada[fecha_y_hora_de_cierre]), MONTH(Tabla_Combinada[fecha_y_hora_de_cierre]), DAY(Tabla_Combinada[fecha_y_hora_de_cierre])))
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: b1a70000-3001-4000-9000-000000000120
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Tabla_Combinada = calculated
+		mode: import
+		source =
+				VAR __N = 600
+				VAR __F0 = DATE(2025, 6, 1)
+				RETURN
+				SELECTCOLUMNS(
+				    GENERATESERIES(1, __N, 1),
+				    "incident_number", "INC" & FORMAT([Value], "0000000"),
+				    "fecha_y_hora_de_notificacion",
+				        __F0 + MOD([Value] * 11, 420) + DIVIDE(MOD([Value] * 97, 1440), 1440),
+				    "fecha_y_hora_de_cierre",
+				        IF(
+				            MOD([Value], 7) = 0,
+				            BLANK(),
+				            __F0 + MOD([Value] * 11, 420) + MOD([Value] * 3, 9)
+				                + DIVIDE(MOD([Value] * 131, 1440), 1440)
+				        ),
+				    "id_status", MOD([Value], 4) + 1,
+				    "assignee",
+				        SWITCH(
+				            MOD([Value], 8),
+				            0, "Ana Torres Ramos",
+				            1, "Bruno Salas Pena",
+				            2, "Carla Medina Rojas",
+				            3, "Diego Ferrer Luna",
+				            4, "Elena Prado Vidal",
+				            5, "Fabio Nunez Ortiz",
+				            6, "Gina Robles Cano",
+				            "Hugo Vargas Leon"
+				        ),
+				    "submitter",
+				        SWITCH(
+				            MOD([Value], 5),
+				            0, "Mesa Nivel 1",
+				            1, "Mesa Nivel 2",
+				            2, "Monitoreo",
+				            3, "Automatico",
+				            "Cliente"
+				        ),
+				    "assigned_group",
+				        SWITCH(
+				            MOD([Value], 3),
+				            0, "ESPECIALISTAS",
+				            1, "OPERACIONES SOC",
+				            "SOPORTE SOC"
+				        ),
+				    "contact_company",
+				        SWITCH(
+				            MOD([Value], 5),
+				            0, "ACME CORP",
+				            1, "BETA RETAIL",
+				            2, "CENTRAL BANK",
+				            3, "DELTA ENERGIA",
+				            "OMEGA SALUD"
+				        ),
+				    "tipo_definitivo",
+				        SWITCH(
+				            MOD([Value], 3),
+				            0, "REQUERIMIENTO",
+				            1, "INCIDENCIA",
+				            "ACTIVIDAD"
+				        ),
+				    "tipo_caso_especialista",
+				        SWITCH(
+				            MOD([Value], 3),
+				            0, "SOC",
+				            1, "SIEM",
+				            "CYBERTHREATS"
+				        ),
+				    "categorization_tier_1",
+				        SWITCH(
+				            MOD([Value], 4),
+				            0, "Seguridad",
+				            1, "Infraestructura",
+				            2, "Aplicaciones",
+				            "Redes"
+				        ),
+				    "categorization_tier_2",
+				        SWITCH(
+				            MOD([Value], 6),
+				            0, "Firewall",
+				            1, "Endpoint",
+				            2, "Identidad",
+				            3, "Correo",
+				            4, "Servidores",
+				            "Enlaces"
+				        ),
+				    "categorization_tier_3",
+				        SWITCH(
+				            MOD([Value], 3),
+				            0, "Alta",
+				            1, "Configuracion",
+				            "Diagnostico"
+				        ),
+				    "description",
+				        "Caso de ejemplo " & FORMAT([Value], "0000") & " generado por la plantilla",
+				    "duracion_resolucion_soc_dias",
+				        POWER(DIVIDE(MOD([Value] * 173, 400), 400), 2) * 30 + 0.02,
+				    "cumplimiento_sla_asignacion",
+				        IF(MOD([Value], 9) = 0, "No cumple", "Cumple"),
+				    "hora_solicitud", MOD([Value] * 7, 24),
+				    "turno",
+				        SWITCH(
+				            TRUE(),
+				            MOD([Value] * 7, 24) < 8, "Noche",
+				            MOD([Value] * 7, 24) < 16, "Manana",
+				            "Tarde"
+				        )
+				)
+
+	annotation PBI_ResultType = Table
+

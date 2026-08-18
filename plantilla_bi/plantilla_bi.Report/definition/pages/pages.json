@@ -1,0 +1,9 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.1.0/schema.json",
+  "pageOrder": [
+    "home0000000000000001",
+    "cat0000000000000cat1",
+    "c0848bc9cbcc7973402e"
+  ],
+  "activePageName": "cat0000000000000cat1"
+}

@@ -1,0 +1,72 @@
+table Calendario
+	lineageTag: 5490458b-5ada-411f-b00f-a34114619c72
+	dataCategory: Time
+
+	column Anio = YEAR('Calendario'[Date])
+		dataType: int64
+		formatString: 0
+		lineageTag: cddd5c63-a0fc-4689-984e-1efa8354c6c6
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mes = MONTH('Calendario'[Date])
+		dataType: int64
+		formatString: 0
+		lineageTag: 9516538d-b32f-4e5a-b190-056ae084102b
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column NombreMes = FORMAT('Calendario'[Date], "MMMM")
+		dataType: string
+		lineageTag: 63ee9f1e-9048-4f3f-8e90-3a987475e9f3
+		summarizeBy: none
+		sortByColumn: Mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dia = DAY('Calendario'[Date])
+		dataType: int64
+		formatString: 0
+		lineageTag: 02b39fe2-4aed-48bc-bca4-1e674cb69642
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column NombreDia = FORMAT('Calendario'[Date], "dddd")
+		dataType: string
+		lineageTag: 71cf9a2f-abb4-41bd-8dff-26e7d2e93c4a
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		isKey
+		formatString: General Date
+		lineageTag: eb8c6a95-a4c3-4ef8-a37b-e5f0e4a15e36
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Calendario = calculated
+		mode: import
+		source =
+				-- Rango derivado de Tabla_Combinada: desde la fecha mas antigua
+				-- que exista en el dato hasta hoy. MINX y MAXX ignoran los blancos.
+				VAR __MinApertura = MINX(Tabla_Combinada, Tabla_Combinada[fecha_apertura_dia])
+				VAR __MinCierre = MINX(Tabla_Combinada, Tabla_Combinada[fecha_cierre_dia])
+				VAR __MaxApertura = MAXX(Tabla_Combinada, Tabla_Combinada[fecha_apertura_dia])
+				VAR __MaxCierre = MAXX(Tabla_Combinada, Tabla_Combinada[fecha_cierre_dia])
+				VAR __Inicio = COALESCE(MINX({ __MinApertura, __MinCierre }, [Value]), TODAY())
+				VAR __MaxDato = COALESCE(MAXX({ __MaxApertura, __MaxCierre }, [Value]), TODAY())
+				-- si algun caso tuviera fecha futura se extiende el rango, para que
+				-- ninguna fila quede fuera del calendario y caiga en la fila en blanco
+				VAR __Fin = MAXX({ TODAY(), __MaxDato }, [Value])
+				RETURN
+				    CALENDAR(__Inicio, __Fin)
+
+	annotation PBI_ResultType = Table
+

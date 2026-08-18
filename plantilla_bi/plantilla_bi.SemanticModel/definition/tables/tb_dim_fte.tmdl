@@ -1,0 +1,77 @@
+/// DIMENSION DE PERSONAS ficticia.
+/// IMPORTANTE: 'assigne' es la CLAVE de cruce con Tabla_Combinada[assignee] y tiene
+/// que casar byte a byte; 'assigne_normalizado' es la columna que se MUESTRA.
+/// Los valores de grupo_soporte son ESPECIALISTAS / OPERACIONES SOC / SOPORTE SOC
+/// porque los tokens DS_Color_Grupo_* y DS_Orden_Grupo hacen SWITCH sobre esos
+/// literales exactos: si se cambian, los grupos se van al gris por defecto.
+table tb_dim_fte
+	lineageTag: b1a70000-3003-4000-9000-000000000001
+
+	column assigne
+		dataType: string
+		lineageTag: b1a70000-3003-4000-9000-000000000101
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [assigne]
+
+		annotation SummarizationSetBy = Automatic
+
+	column assigne_normalizado
+		dataType: string
+		lineageTag: b1a70000-3003-4000-9000-000000000102
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [assigne_normalizado]
+
+		annotation SummarizationSetBy = Automatic
+
+	column rol
+		dataType: string
+		lineageTag: b1a70000-3003-4000-9000-000000000103
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [rol]
+
+		annotation SummarizationSetBy = Automatic
+
+	column grupo_soporte
+		dataType: string
+		lineageTag: b1a70000-3003-4000-9000-000000000104
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [grupo_soporte]
+
+		annotation SummarizationSetBy = Automatic
+
+	column empresa
+		dataType: string
+		lineageTag: b1a70000-3003-4000-9000-000000000105
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [empresa]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition tb_dim_fte = calculated
+		mode: import
+		source =
+				DATATABLE(
+				    "assigne", STRING,
+				    "assigne_normalizado", STRING,
+				    "rol", STRING,
+				    "grupo_soporte", STRING,
+				    "empresa", STRING,
+				    {
+				        {"Ana Torres Ramos",   "Ana Torres",   "Lider",          "OPERACIONES SOC", "Interno"},
+				        {"Bruno Salas Pena",   "Bruno Salas",  "SIEM & SOAR",    "OPERACIONES SOC", "Interno"},
+				        {"Carla Medina Rojas", "Carla Medina", "SIEM & SOAR",    "OPERACIONES SOC", "Proveedor"},
+				        {"Diego Ferrer Luna",  "Diego Ferrer", "Endpoint",       "SOPORTE SOC",     "Interno"},
+				        {"Elena Prado Vidal",  "Elena Prado",  "Soporte",        "SOPORTE SOC",     "Interno"},
+				        {"Fabio Nunez Ortiz",  "Fabio Nunez",  "Soporte",        "SOPORTE SOC",     "Proveedor"},
+				        {"Gina Robles Cano",   "Gina Robles",  "Implementacion", "ESPECIALISTAS",   "Interno"},
+				        {"Hugo Vargas Leon",   "Hugo Vargas",  "Vulnerabilidad", "ESPECIALISTAS",   "Interno"}
+				    }
+				)
+
+	annotation PBI_ResultType = Table
+

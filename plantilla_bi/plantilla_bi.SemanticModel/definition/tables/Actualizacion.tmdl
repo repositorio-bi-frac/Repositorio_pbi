@@ -1,0 +1,17 @@
+table Actualizacion
+	lineageTag: 7ab6081a-fc73-4e0d-ad76-5fcf8de5a7aa
+
+	column UltimaActualizacion
+		lineageTag: 698e15f7-64e0-426d-9454-b933775a1c33
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [UltimaActualizacion]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Actualizacion = calculated
+		mode: import
+		source = ROW("UltimaActualizacion", NOW())
+
+	annotation PBI_ResultType = Table
+

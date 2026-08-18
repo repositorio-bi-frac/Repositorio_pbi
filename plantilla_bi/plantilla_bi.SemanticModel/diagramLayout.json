@@ -1,0 +1,152 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 240.00000000000003,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1436.2892838659777,
+            "y": 18.4421308633203
+          },
+          "nodeIndex": "Actualizacion",
+          "nodeLineageTag": "7ab6081a-fc73-4e0d-ad76-5fcf8de5a7aa",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1090.7277163655249,
+            "y": 769.06662309686021
+          },
+          "nodeIndex": "Calendario",
+          "nodeLineageTag": "5490458b-5ada-411f-b00f-a34114619c72",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1737.1464267231208,
+            "y": 22.727845149034579
+          },
+          "nodeIndex": "Medidas",
+          "nodeLineageTag": "medidas-table",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 701.523757955754,
+            "y": 318.58767978957638
+          },
+          "nodeIndex": "Tabla_Combinada",
+          "nodeLineageTag": "c40d317b-1309-4890-a2e4-572d353e0697",
+          "size": {
+            "height": 432.72727272727263,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 157.42353518866412,
+            "y": 395.97997102740192
+          },
+          "nodeIndex": "tb_dim_priority",
+          "nodeLineageTag": "af6dcb6b-d857-483d-bdbb-6486d0f0b5a5",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 268.86381653217092,
+            "y": 42.877949507545985
+          },
+          "nodeIndex": "tb_dim_status",
+          "nodeLineageTag": "074eca68-f0ef-4712-b76e-a5181bbc826b",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 255.24134327549655,
+            "y": 833.70513630422056
+          },
+          "nodeIndex": "tb_dim_urgency",
+          "nodeLineageTag": "70f2c6b2-eac3-4d95-a33b-b8ef236488d6",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1159.9850677813101,
+            "y": 1.4541602900701918
+          },
+          "nodeIndex": "tb_fact_remedy_abiertos_mesa_soc_gold",
+          "nodeLineageTag": "fdae9e9e-669c-42fb-929d-6ae45d3935a5",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1152.2490428585622,
+            "y": 355.07894946923051
+          },
+          "nodeIndex": "tb_fact_remedy_cerrados_cancelados_mesa_soc_gold",
+          "nodeLineageTag": "d97e0adc-608b-4ec0-b6e2-1570a8d6f810",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1566.5800343915994,
+            "y": 407.71952292865649
+          },
+          "nodeIndex": "tb_dim_fte",
+          "nodeLineageTag": "c8bf22a9-ce98-4536-b963-59d2a45ca652",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas las tablas",
+      "zoomValue": 70,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas las tablas",
+  "defaultDiagram": "Todas las tablas"
+}
