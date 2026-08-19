@@ -1,0 +1,24 @@
+# Proyectos Power BI en formato PBIP: Desktop y el parser de TMDL necesitan CRLF.
+# Sin esto, al clonar en macOS o Linux los .tmdl llegan con LF solamente y el
+# proyecto no abre. Forzarlo aqui vale para cualquier sistema, sin depender de
+# como tenga configurado autocrlf cada persona.
+*.tmdl      text eol=crlf
+*.json      text eol=crlf
+*.pbip      text eol=crlf
+*.pbir      text eol=crlf
+*.pbism     text eol=crlf
+.platform   text eol=crlf
+*.platform  text eol=crlf
+
+# Documentacion: LF, que es lo natural en git y en GitHub.
+*.md        text eol=lf
+.gitignore  text eol=lf
+.gitattributes text eol=lf
+
+# Binarios: git no los reescribe ni intenta hacer diff de texto.
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.abf       binary
+*.pbix      binary
+*.xlsx      binary
