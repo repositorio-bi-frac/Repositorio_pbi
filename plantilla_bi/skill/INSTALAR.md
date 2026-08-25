@@ -6,22 +6,29 @@ El skill es la carpeta `fractalia-bi-template-migrator`, que contiene un único 
 
 **Ojo con la consola.** Los tres comandos de abajo hacen lo mismo, pero cada uno sirve solo en su consola. Si pegás el de Git Bash en `cmd` sale *«La sintaxis del comando no es correcta»*, porque `cmd` no entiende `mkdir -p`, `cp -r` ni `~/`.
 
+Los comandos se ejecutan **desde la raíz del clon** del repositorio, así funcionan sin importar dónde lo hayas clonado. Primero:
+
+```powershell
+git clone https://github.com/repositorio-bi-frac/Repositorio_pbi.git
+cd Repositorio_pbi
+```
+
 ### PowerShell (el más recomendable)
 
 ```powershell
-New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills" | Out-Null; Copy-Item -Recurse -Force "F:\Automatizacion PBI\plantilla_bi\skill\fractalia-bi-template-migrator" "$env:USERPROFILE\.claude\skills\"
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills" | Out-Null; Copy-Item -Recurse -Force ".\plantilla_bi\skill\fractalia-bi-template-migrator" "$env:USERPROFILE\.claude\skills\"
 ```
 
 ### cmd (Símbolo del sistema)
 
 ```bat
-mkdir "%USERPROFILE%\.claude\skills" 2>nul & xcopy /E /I /Y "F:\Automatizacion PBI\plantilla_bi\skill\fractalia-bi-template-migrator" "%USERPROFILE%\.claude\skills\fractalia-bi-template-migrator"
+mkdir "%USERPROFILE%\.claude\skills" 2>nul & xcopy /E /I /Y ".\plantilla_bi\skill\fractalia-bi-template-migrator" "%USERPROFILE%\.claude\skills\fractalia-bi-template-migrator"
 ```
 
 ### Git Bash
 
 ```bash
-mkdir -p ~/.claude/skills && cp -r "/f/Automatizacion PBI/plantilla_bi/skill/fractalia-bi-template-migrator" ~/.claude/skills/
+mkdir -p ~/.claude/skills && cp -r ./plantilla_bi/skill/fractalia-bi-template-migrator ~/.claude/skills/
 ```
 
 ### A mano
@@ -59,7 +66,9 @@ Tiene que devolver `True`. Después, ya en Claude Code reiniciado, pedirle la li
 
 ## Requisito
 
-El skill da por sentado que existe la plantilla en `F:\Automatizacion PBI\plantilla_bi`, con `VOCABULARIO.md` y `README.md`, porque de ahí se copian los componentes y los tokens. Si tu compañero la tiene en otra ruta, hay que ajustar esa ruta en la primera línea del cuerpo del `SKILL.md` y en su `description`.
+El skill necesita **la carpeta `plantilla_bi` de este repositorio disponible en disco**, porque de ahí se copian los componentes y los tokens. Basta con tener el clon; la ruta no está cableada en el skill. Si no la encuentra, va a preguntar dónde está el clon antes de seguir.
+
+Lo que **no** hay que hacer es instalar el skill sin clonar el repositorio: quedaría la guía de criterio sin los componentes a los que manda copiar.
 
 ## Qué NO incluye
 

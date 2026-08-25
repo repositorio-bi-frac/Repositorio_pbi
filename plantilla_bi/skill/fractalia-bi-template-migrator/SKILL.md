@@ -1,11 +1,13 @@
 ---
 name: fractalia-bi-template-migrator
-description: Reutiliza la maqueta PBIP corporativa de Fractalia (F:\Automatizacion PBI\plantilla_bi) para crear o migrar páginas de Power BI reusando los componentes ya homologados, sin crear modelos nuevos salvo confirmación expresa. Actívalo cuando se mencione la plantilla, el catálogo, la maqueta, componentes reutilizables, visuales HTML Content, migrar un informe al estilo corporativo, franja de filtros, Home, fondos, KPIs, tokens DS_*, o PBIP/PBIR. Guía la adaptación de DAX y PBIR sin inventar estructuras de Power BI.
+description: Reutiliza la maqueta PBIP corporativa de Fractalia (carpeta plantilla_bi del repositorio Repositorio_pbi) para crear o migrar páginas de Power BI reusando los componentes ya homologados, sin crear modelos nuevos salvo confirmación expresa. Actívalo cuando se mencione la plantilla, el catálogo, la maqueta, componentes reutilizables, visuales HTML Content, migrar un informe al estilo corporativo, franja de filtros, Home, fondos, KPIs, tokens DS_*, o PBIP/PBIR. Guía la adaptación de DAX y PBIR sin inventar estructuras de Power BI.
 ---
 
 # Migrador a la plantilla BI de Fractalia
 
-Sirve para **migrar un informe existente** al estándar corporativo y para **crear páginas nuevas** desde la maqueta. La fuente de verdad es `F:\Automatizacion PBI\plantilla_bi`, con `VOCABULARIO.md` (contrato de componentes) y `README.md` (uso y diagnóstico).
+Sirve para **migrar un informe existente** al estándar corporativo y para **crear páginas nuevas** desde la maqueta.
+
+La fuente de verdad es la carpeta **`plantilla_bi`** del repositorio [Repositorio_pbi](https://github.com/repositorio-bi-frac/Repositorio_pbi), clonado en local: ahí están `VOCABULARIO.md` (contrato de componentes), `README.md` (uso y diagnóstico) y los componentes en sí. En el equipo de referencia queda en `F:\Automatizacion PBI\Repositorio_pbi\plantilla_bi`, pero **la ruta depende de dónde se haya clonado**: si no se encuentra, hay que preguntarle al usuario dónde tiene el clon antes de seguir, no asumir una ruta.
 
 ---
 
