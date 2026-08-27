@@ -3217,6 +3217,17 @@ table Medidas
 		displayFolder: Diseno HTML\Titulos\IconosFiltro
 		lineageTag: a7b8c9d0-0014-4e88-9a88-800000000014
 
+	measure HTML_IconoFiltro_Tecnico =
+			-- Silueta de persona (cabeza + hombros), para segmentadores de tecnico/agente/responsable.
+			-- Agregado 2026-08-26 al migrar CDM_PRODUCTIVIDAD_MELIA (no existia un icono homologado
+			-- de "persona" en el set Anio/Mes/Dia/Estado) -- ver VOCABULARIO.md.
+			[DS_BadgeFiltro_Ini]
+				& "<circle cx='12' cy='8' r='3.2' stroke='#FFFFFF' stroke-width='1.8'></circle>"
+				& "<path d='M5 19c.7-4 3.2-6.2 7-6.2s6.3 2.2 7 6.2' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round'></path>"
+				& [DS_BadgeFiltro_Fin]
+		displayFolder: Diseno HTML\Titulos\IconosFiltro
+		lineageTag: a7b8c9d0-9001-4e88-9a88-800000009001
+
 	measure DS_SinDatos_Conflicto = "Este cuadro tiene el tipo de caso fijado. Los segmentadores de Tipo o Especialidad lo estan excluyendo: deseleccionalos para verlo."
 		displayFolder: Diseno HTML\Tokens
 		lineageTag: 1a2b3c4d-0015-4a11-9a11-000000000015
@@ -3664,6 +3675,157 @@ table Medidas
 			    & "</div>"
 		displayFolder: Diseno HTML\Graficos
 		lineageTag: b1a70000-9004-4000-9000-000000000001
+
+	measure HTML_Barras_Horizontales_Agrupadas =
+			-- Variante HORIZONTAL de "columnas agrupadas, series por medida": misma idea (N medidas
+			-- comparadas lado a lado, NO se suman), pero categorias en filas en vez de columnas.
+			-- Se homologa 2026-08-27 al migrar CDM_PRODUCTIVIDAD_MELIA: con 20-30 categorias (una
+			-- persona/entidad por fila, no un periodo), un contenedor angosto y alto encaja mucho
+			-- mejor con barras horizontales + scroll VERTICAL que con columnas verticales + scroll
+			-- horizontal -- ver VOCABULARIO.md. Reutiliza [Aperturados]/[Cerrados] agrupando por
+			-- tb_dim_fte[assigne_normalizado] en vez de por Calendario[Anio]/[Mes].
+			VAR __Nombre1 = "Aperturados"
+			VAR __Nombre2 = "Cerrados"
+			VAR __Color1 = PATHITEM([DS_Paleta], 2)
+			VAR __Color2 = PATHITEM([DS_Paleta], 4)
+			VAR __Categorias =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(tb_dim_fte, tb_dim_fte[assigne_normalizado]),
+			            "@S1", CALCULATE([Aperturados]),
+			            "@S2", CALCULATE([Cerrados])
+			        ),
+			        COALESCE([@S1], 0) > 0 || COALESCE([@S2], 0) > 0
+			    )
+			VAR __CantidadCategorias = COALESCE(COUNTROWS(__Categorias), 0)
+			VAR __Maximo = MAXX(__Categorias, MAX(COALESCE([@S1], 0), COALESCE([@S2], 0)))
+			VAR __SinDatos = __CantidadCategorias = 0 || ISBLANK(__Maximo) || __Maximo = 0
+			VAR __AltoContenedor = 240
+			VAR __AltoTitulo = 18
+			VAR __AltoLeyenda = 22
+			VAR __AltoCuerpoDisponible = __AltoContenedor - __AltoTitulo - __AltoLeyenda
+			-- reparto del alto entre categorias, con tope y piso (misma logica que "el grafico llena
+			-- la tarjeta" del vocabulario, aplicada por FILA en vez de por columna)
+			VAR __AltoFila = MIN(40, MAX(22, INT(DIVIDE(__AltoCuerpoDisponible - 14, MAX(__CantidadCategorias, 1), 0))))
+			VAR __RequiereScroll = __CantidadCategorias * 22 > __AltoCuerpoDisponible - 14
+			VAR __AltoNota = IF(__RequiereScroll, 14, 0)
+			VAR __AltoCuerpo = MAX(50, __AltoCuerpoDisponible - __AltoNota)
+			VAR __AltoBarra = MAX(5, INT(DIVIDE(__AltoFila - 6, 2, 0)))
+			-- ancho de la etiqueta segun el nombre mas largo (nunca truncar en silencio): si no entra
+			-- igual, envuelve a 2 lineas en vez de cortar con "..."
+			VAR __LargoMax = IF(__CantidadCategorias = 0, 0, MAXX(__Categorias, LEN(tb_dim_fte[assigne_normalizado])))
+			VAR __AnchoEtiqueta = MIN(110, MAX(50, INT(__LargoMax * 4.6) + 10))
+			-- etiquetas de datos al extremo de cada barra, igual que en HTML_Barras_Agrupadas (div
+			-- absoluto pegado al final de la barra, con el color de su serie). Alli se reservan 14px de
+			-- ALTO para que la etiqueta de la barra mas alta no se salga del trazado; aqui, al ser
+			-- horizontal, lo que se reserva es ANCHO: se limita el % maximo de ancho de barra segun los
+			-- digitos del valor mas grande. El ancho del contenedor va cableado, como el resto de la
+			-- geometria en DAX de esta plantilla: si se cambia el ancho del visual, cambiarlo aqui.
+			VAR __AnchoContenedor = 400
+			VAR __AnchoUtil = MAX(80, __AnchoContenedor - 28)
+			VAR __AnchoPista = MAX(40, __AnchoUtil - __AnchoEtiqueta)
+			VAR __AnchoValor = LEN(FORMAT(COALESCE(__Maximo, 0), "#,0")) * 6 + 4
+			VAR __PctMaxBarra = MAX(45, 100 - DIVIDE(__AnchoValor + 3, __AnchoPista, 0) * 100)
+			VAR __FilasHTML =
+			    CONCATENATEX(
+			        __Categorias,
+			        VAR __Etq = tb_dim_fte[assigne_normalizado]
+			        VAR __V1 = COALESCE([@S1], 0)
+			        VAR __V2 = COALESCE([@S2], 0)
+			        VAR __W1 = MAX(2, DIVIDE(__V1, MAX(__Maximo, 1), 0) * __PctMaxBarra)
+			        VAR __W2 = MAX(2, DIVIDE(__V2, MAX(__Maximo, 1), 0) * __PctMaxBarra)
+			        VAR __Barra1 =
+			            "<div title='" & __Etq & " | " & __Nombre1 & ": " & FORMAT(__V1, "#,0") & "'"
+			                & " style='position:relative;height:" & FORMAT(__AltoBarra, "0", "en-US") & "px;"
+			                & "width:" & FORMAT(__W1, "0.0###", "en-US") & "%;min-width:2px;"
+			                & "background:" & __Color1 & ";border-radius:0 3px 3px 0;"
+			                & "box-sizing:border-box;'>"
+			                & "<div style='position:absolute;left:100%;top:50%;"
+			                & "transform:translateY(-50%);margin-left:3px;font-size:9px;"
+			                & "font-weight:600;color:" & __Color1 & ";white-space:nowrap;'>"
+			                & FORMAT(__V1, "#,0")
+			                & "</div>"
+			            & "</div>"
+			        VAR __Barra2 =
+			            "<div title='" & __Etq & " | " & __Nombre2 & ": " & FORMAT(__V2, "#,0") & "'"
+			                & " style='position:relative;height:" & FORMAT(__AltoBarra, "0", "en-US") & "px;"
+			                & "width:" & FORMAT(__W2, "0.0###", "en-US") & "%;min-width:2px;"
+			                & "background:" & __Color2 & ";border-radius:0 3px 3px 0;"
+			                & "box-sizing:border-box;margin-top:2px;'>"
+			                & "<div style='position:absolute;left:100%;top:50%;"
+			                & "transform:translateY(-50%);margin-left:3px;font-size:9px;"
+			                & "font-weight:600;color:" & __Color2 & ";white-space:nowrap;'>"
+			                & FORMAT(__V2, "#,0")
+			                & "</div>"
+			            & "</div>"
+			        RETURN
+			            "<div style='min-height:" & FORMAT(__AltoFila, "0") & "px;flex:0 0 auto;"
+			                & "display:flex;flex-direction:row;align-items:center;"
+			                & "box-sizing:border-box;padding:2px 4px;"
+			                & "border-bottom:1px solid " & [DS_Color_Divisor] & ";'>"
+			                & "<div title='" & __Etq & "' style='width:" & FORMAT(__AnchoEtiqueta, "0", "en-US") & "px;"
+			                & "flex:0 0 " & FORMAT(__AnchoEtiqueta, "0", "en-US") & "px;min-width:0;"
+			                & "font-size:9px;line-height:11px;color:" & [DS_Color_TextoSecundario] & ";"
+			                & "white-space:normal;overflow-wrap:break-word;"
+			                & "padding-right:6px;box-sizing:border-box;'>"
+			                & __Etq
+			                & "</div>"
+			                & "<div style='flex:1 1 auto;min-width:0;display:flex;"
+			                & "flex-direction:column;justify-content:center;gap:2px;box-sizing:border-box;'>"
+			                    & __Barra1
+			                    & __Barra2
+			                & "</div>"
+			            & "</div>",
+			        "",
+			        [@S1] + [@S2],
+			        DESC
+			    )
+			VAR __LeyendaHTML =
+			    "<span style='display:inline-flex;align-items:center;gap:6px;margin-right:16px;"
+			        & "font-size:11px;color:" & [DS_Color_TextoSecundario] & ";white-space:nowrap;'>"
+			        & "<span style='width:9px;height:9px;border-radius:3px;background:"
+			        & __Color1 & ";display:inline-block;'></span>"
+			        & __Nombre1
+			    & "</span>"
+			    & "<span style='display:inline-flex;align-items:center;gap:6px;"
+			        & "font-size:11px;color:" & [DS_Color_TextoSecundario] & ";white-space:nowrap;'>"
+			        & "<span style='width:9px;height:9px;border-radius:3px;background:"
+			        & __Color2 & ";display:inline-block;'></span>"
+			        & __Nombre2
+			    & "</span>"
+			VAR __NotaHTML =
+			    IF(
+			        __RequiereScroll,
+			        "<div style='height:" & FORMAT(__AltoNota, "0") & "px;flex:0 0 " & FORMAT(__AltoNota, "0") & "px;"
+			            & "font-size:9px;color:" & [DS_Color_TextoSecundario] & ";white-space:nowrap;"
+			            & "overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;'>"
+			            & FORMAT(__CantidadCategorias, "#,0") & " (desplázate para ver todos)"
+			        & "</div>",
+			        ""
+			    )
+			RETURN
+			    "<div style='height:100%;max-height:100%;" & [DS_Contenedor_Estilo] & "'>"
+			        & "<div style='" & [DS_Titulo_Estilo] & " white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:"
+			        & FORMAT(__AltoTitulo, "0") & "px;flex:0 0 " & FORMAT(__AltoTitulo, "0") & "px;'>"
+			            & __Nombre1 & " vs " & __Nombre2
+			        & "</div>"
+			        & __NotaHTML
+			        & "<div style='display:flex;align-items:center;flex-wrap:wrap;"
+			            & "flex:0 0 " & FORMAT(__AltoLeyenda, "0") & "px;height:"
+			            & FORMAT(__AltoLeyenda, "0") & "px;box-sizing:border-box;'>"
+			            & __LeyendaHTML
+			        & "</div>"
+			        & IF(
+			            __SinDatos,
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			            "<div style='width:100%;height:" & FORMAT(__AltoCuerpo, "0") & "px;"
+			                & "overflow-y:auto;overflow-x:hidden;box-sizing:border-box;'>"
+			                & __FilasHTML
+			            & "</div>"
+			        )
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: d5e10002-0000-4000-9000-000000000001
 
 	column Column1
 		lineageTag: ae78e056-9e0e-4ce8-9fa5-33a23c78a09b

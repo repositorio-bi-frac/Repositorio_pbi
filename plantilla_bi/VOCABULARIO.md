@@ -26,7 +26,7 @@ Abrilo en Power BI Desktop: no pide credenciales, los datos se generan en DAX.
 | **menú / navegador** | visual nativo `pageNavigator` en **x=258,7 y=49,6 · 825,8×32,1**. Se copia y se cambian los ids del array `pages`. |
 | **rótulo de filtros** | `HTML_Rotulo_Filtros` en **x=27,2 y=32,1 · 195,5×45,7**. Icono, texto blanco y una línea de 2 px debajo. |
 | **segmento de filtro** | tres visuales por filtro: `shape` de marco (**x=25,5 · 199,1×74,9**), `slicer` nativo (**x=67,5 · 155,1×70,9**) e icono HTML (**x=29,5 · 34×34**). Las y van en pasos de **78**: 78,7 / 156,7 / 234,7. |
-| **icono de filtro** | `HTML_IconoFiltro_Anio`, `_Mes`, `_Dia`, `_Estado`. Se arman con `DS_BadgeFiltro_Ini` + los `path` + `DS_BadgeFiltro_Fin`. Para un icono nuevo se copia uno y se cambia el `path`. |
+| **icono de filtro** | `HTML_IconoFiltro_Anio`, `_Mes`, `_Dia`, `_Estado`, `_Tecnico` (silueta de persona — agregado 2026-08-26 al migrar CDM_PRODUCTIVIDAD_MELIA, para segmentadores de técnico/agente/responsable). Se arman con `DS_BadgeFiltro_Ini` + los `path` + `DS_BadgeFiltro_Fin`. Para un icono nuevo se copia uno y se cambia el `path`. |
 | **botón limpiar** | `actionButton` con `visualLink.type = ClearAllSlicers`, en **x=70 y=584,6 · 110,9×37,9**. Sin bookmarks. |
 | **fecha de actualización** | `HTML_UltimaActualizacion` en **x=31,2 y=636,4 · 187,1×63,8**. |
 
@@ -42,6 +42,7 @@ Uno por modelo. Si hace falta otro igual, se copia la medida y se le cambian la 
 | **tarjeta KPI de duración** (hh:mm:ss desde un percentil) | `HTML_KPI_Q2` | libre |
 | **columnas apiladas** por periodo, series por dimensión | `HTML_Volumetria_Apilado` | 290 |
 | **columnas agrupadas** por periodo, series **por medida** | `HTML_Barras_Agrupadas` | 240 |
+| **barras horizontales agrupadas** por entidad (persona/agente/técnico), series **por medida** | `HTML_Barras_Horizontales_Agrupadas` | 240 (libre — con 20-30+ categorías conviene más alto, ej. 480-600) |
 | **barras horizontales apiladas** por estado | `HTML_Backlog_Barras_AgenteEstado` | 190 |
 | **barras horizontales simples** (ranking con Top N) | `HTML_Vision_Barras_Cliente` | 180 |
 | **combo** barras + línea | `HTML_Vision_Combo_Volumetria` | 200 |
@@ -59,6 +60,10 @@ Uno por modelo. Si hace falta otro igual, se copia la medida y se le cambian la 
 - **agrupadas** (`HTML_Barras_Agrupadas`): **varias medidas** comparadas entre sí, lado a lado. No se suman: cada barra se lee por separado. Es el modelo para "SCCM vs PANDA" o "aperturados vs cerrados".
 
 Si se usa el apilado para comparar dos medidas, la altura total pasa a leerse como una suma que no significa nada. Para una tercera serie en el agrupado se duplica el bloque de la barra, igual que el motor de líneas hace con sus tres.
+
+**Agrupadas vertical u horizontal, según cuántas categorías hay.** `HTML_Barras_Agrupadas` (columnas verticales) encaja cuando las categorías son pocas y de nombre corto (típicamente periodos: "ene 25", "feb 25"). `HTML_Barras_Horizontales_Agrupadas` encaja cuando las categorías son muchas (20-30+) y de nombre largo (personas, agentes, técnicos): un contenedor angosto-y-alto con columnas verticales apretadas se ve mal y necesita scroll horizontal incómodo; el mismo contenedor con filas horizontales reparte el alto entre categorías (igual lógica de tope/piso que el resto de la plantilla, aplicada por fila) y solo necesita scroll vertical, que es más natural. Homologado 2026-08-26/27 al migrar `CDM_PRODUCTIVIDAD_MELIA` — la primera versión (vertical, forzada en un contenedor angosto) no se veía bien; el usuario pidió invertir el sentido con los mismos datos.
+
+**Las dos agrupadas llevan etiqueta de datos al extremo de la barra**, con el color de su serie (`position:absolute` sobre la barra, que es `position:relative`). La etiqueta necesita espacio reservado o la barra más larga la empuja fuera del trazado: en la vertical se restan px de **alto** (`__AltoMaxBarra = __AltoPlot - 14`), en la horizontal se limita el **% máximo de ancho** de barra según los dígitos del valor mayor (`__PctMaxBarra`), calculado sobre el ancho real de la pista — nunca un porcentaje fijo a ojo.
 
 ### El alto de cada visual no es libre
 
