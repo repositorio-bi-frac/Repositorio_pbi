@@ -3497,11 +3497,11 @@ table Medidas
 	/// medidas distintas puestas lado a lado sobre el mismo eje de periodo.
 	/// El apilado (HTML_Volumetria_Apilado) parte UNA medida por una dimension;
 	/// este compara VARIAS medidas entre si.
-	///
+	/// 
 	/// Para reutilizarlo: cambiar las dos medidas de @S1 y @S2, sus nombres en
 	/// __Nombre1/__Nombre2 y el titulo. Para una tercera serie se duplica el
 	/// bloque de la barra (misma forma que el motor de lineas, que lleva 3).
-	///
+	/// 
 	/// Alturas en PX, nunca en %: height:100% es inerte en el visual HTML Content
 	/// y un porcentaje contra un alto indefinido colapsa la barra a cero.
 	/// ================================================================
@@ -3510,7 +3510,7 @@ table Medidas
 			VAR __Nombre2 = "Cerrados"
 			VAR __Color1 = PATHITEM([DS_Paleta], 2)
 			VAR __Color2 = PATHITEM([DS_Paleta], 4)
-
+			
 			/* ---------- 1. periodos visibles, con las dos medidas ---------- */
 			VAR __Categorias =
 			    FILTER(
@@ -3561,7 +3561,7 @@ table Medidas
 			VAR __AltoPlot = 150 - __EspacioScroll
 			VAR __AltoMaxBarra = __AltoPlot - 14
 			VAR __AltoCaja = __AltoPlot + 25 + __EspacioScroll
-
+			
 			/* ---------- 2. una columna por periodo, con las dos barras ---------- */
 			VAR __ColumnasHTML =
 			    CONCATENATEX(
@@ -3617,7 +3617,7 @@ table Medidas
 			        [@Orden],
 			        ASC
 			    )
-
+			
 			/* ---------- 3. leyenda ---------- */
 			VAR __LeyendaHTML =
 			    "<span style='display:inline-flex;align-items:center;gap:6px;margin-right:16px;"
@@ -3632,7 +3632,7 @@ table Medidas
 			        & __Color2 & ";display:inline-block;'></span>"
 			        & __Nombre2
 			    & "</span>"
-
+			
 			/* ---------- 4. ancho: si no entran, scroll y avisarlo en el titulo ---------- */
 			VAR __AnchoInterno =
 			    IF(
@@ -3643,7 +3643,7 @@ table Medidas
 			VAR __ColumnasGrid =
 			    "repeat(" & FORMAT(__CantidadCategorias, "0") & ", minmax("
 			        & IF(__Entran, "0", FORMAT(__AnchoMinPeriodo, "0") & "px") & ", 1fr))"
-
+			
 			RETURN
 			    "<div style='height:100%;max-height:100%;" & [DS_Contenedor_Estilo] & "'>"
 			        & "<div style='" & [DS_Titulo_Estilo] & "'>"
@@ -3826,6 +3826,291 @@ table Medidas
 			    & "</div>"
 		displayFolder: Diseno HTML\Graficos
 		lineageTag: d5e10002-0000-4000-9000-000000000001
+
+	measure HTML_Combo_AperturadosCerrados =
+			
+			VAR __AnchoSVG = 460
+			VAR __AltoSVG = 200
+			
+			VAR __MargenX = 24
+			VAR __MargenSuperior = 16
+			VAR __MargenInferior = 12
+			
+			VAR __AnchoPlot = __AnchoSVG - (__MargenX * 2)
+			VAR __AltoPlot = __AltoSVG - __MargenSuperior - __MargenInferior
+			
+			/* ============================================================
+			   1. Datos por periodo -- columnas Aperturados/Cerrados (apiladas: son las dos
+			   mitades del total, se suman) + linea %Cerrados en eje secundario
+			   ============================================================ */
+			VAR __CategoriasBase =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(
+			                Tabla_Combinada,
+			                Calendario[Anio],
+			                Calendario[Mes]
+			            ),
+			
+			            "@Orden",
+			                Calendario[Anio] * 100 + Calendario[Mes],
+			
+			            "@Etiqueta",
+			                SWITCH(
+			                    Calendario[Mes],
+			                    1, "ene", 2, "feb", 3, "mar", 4, "abr", 5, "may", 6, "jun",
+			                    7, "jul", 8, "ago", 9, "sep", 10, "oct", 11, "nov", 12, "dic", ""
+			                )
+			                    & " " & RIGHT(FORMAT(Calendario[Anio], "0000"), 2),
+			
+			            "@Aperturados",
+			                CALCULATE([Aperturados]),
+			
+			            "@Cerrados",
+			                CALCULATE([Cerrados])
+			        ),
+			
+			        NOT(
+			            ISBLANK([@Aperturados])
+			                && ISBLANK([@Cerrados])
+			        )
+			    )
+			
+			VAR __Categorias =
+			    ADDCOLUMNS(
+			        __CategoriasBase,
+			        "@Indice",
+			            VAR __OrdenActual = [@Orden]
+			            RETURN
+			                COUNTROWS(FILTER(__CategoriasBase, [@Orden] < __OrdenActual))
+			    )
+			
+			VAR __CantidadCategorias = COUNTROWS(__Categorias)
+			VAR __SinDatos = __CantidadCategorias = 0
+			
+			/* ============================================================
+			   2. Escala primaria (columna apilada, izquierda) -- Aperturados + Cerrados
+			   ============================================================ */
+			VAR __Totales =
+			    ADDCOLUMNS(
+			        __Categorias,
+			        "@Total", COALESCE([@Aperturados], 0) + COALESCE([@Cerrados], 0)
+			    )
+			
+			VAR __MaxValCol = MAXX(__Totales, [@Total])
+			VAR __MaxEscala = MAX(COALESCE(__MaxValCol, 0), 0)
+			VAR __MinEscala = 0
+			VAR __RangoCol = MAX(__MaxEscala - __MinEscala, 1)
+			
+			VAR __ZeroYCol = __MargenSuperior + __AltoPlot - DIVIDE(0 - __MinEscala, __RangoCol, 0) * __AltoPlot
+			
+			/* ============================================================
+			   3. Escala secundaria (linea, derecha) -- %Cerrados = Cerrados / Total
+			   ============================================================ */
+			VAR __ValoresPct =
+			    SELECTCOLUMNS(
+			        FILTER(__Totales, [@Total] > 0),
+			        "@Valor", DIVIDE([@Cerrados], [@Total], 0)
+			    )
+			
+			VAR __MaxValPct = MAXX(__ValoresPct, [@Valor])
+			VAR __MinValPct = MINX(__ValoresPct, [@Valor])
+			VAR __MaxEscalaPct = MAX(COALESCE(__MaxValPct, 1), 1)
+			VAR __MinEscalaPct = MIN(COALESCE(__MinValPct, 0), 0)
+			VAR __RangoPct = MAX(__MaxEscalaPct - __MinEscalaPct, 0.01)
+			
+			/* ============================================================
+			   4. Geometria de la barra apilada -- una por periodo
+			   ============================================================ */
+			VAR __AnchoSlot = DIVIDE(__AnchoPlot, MAX(__CantidadCategorias, 1), 0)
+			VAR __AnchoBarra = __AnchoSlot * 0.56
+			
+			VAR __BarrasHTML =
+			    CONCATENATEX(
+			        __Categorias,
+			
+			        VAR __Indice = [@Indice]
+			        VAR __SlotLeft = __MargenX + (__Indice * __AnchoSlot)
+			        VAR __X = __SlotLeft + ((__AnchoSlot - __AnchoBarra) / 2)
+			        VAR __CentroBarra = __X + (__AnchoBarra / 2)
+			
+			        VAR __ValAperturados = COALESCE([@Aperturados], 0)
+			        VAR __ValCerrados = COALESCE([@Cerrados], 0)
+			
+			        // Aperturados abajo (desde la base), Cerrados apilado encima
+			        VAR __YAperturados =
+			            __MargenSuperior + __AltoPlot
+			                - DIVIDE(__ValAperturados - __MinEscala, __RangoCol, 0) * __AltoPlot
+			        VAR __YTotal =
+			            __MargenSuperior + __AltoPlot
+			                - DIVIDE((__ValAperturados + __ValCerrados) - __MinEscala, __RangoCol, 0) * __AltoPlot
+			
+			        VAR __AltoAperturados = MAX(__ZeroYCol - __YAperturados, 0)
+			        VAR __AltoCerrados = MAX(__YAperturados - __YTotal, 0)
+			
+			        VAR __SegmentoAperturados =
+			            IF(
+			                ISBLANK([@Aperturados]),
+			                "",
+			                "<rect x='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                    & " y='" & FORMAT(__YAperturados, "0.00", "en-US") & "'"
+			                    & " width='" & FORMAT(__AnchoBarra, "0.00", "en-US") & "'"
+			                    & " height='" & FORMAT(MAX(__AltoAperturados, 1), "0.00", "en-US") & "'"
+			                    & " fill='" & PATHITEM([DS_Paleta], 2) & "'>"
+			                    & "<title>Aperturados: " & FORMAT(__ValAperturados, "#,0") & "</title>"
+			                    & "</rect>"
+			                    &
+			                "<text"
+			                    & " x='" & FORMAT(__CentroBarra, "0.00", "en-US") & "'"
+			                    & " y='" & FORMAT((__YAperturados + __ZeroYCol) / 2 + 3, "0.00", "en-US") & "'"
+			                    & " text-anchor='middle'"
+			                    & " font-family='Segoe UI'"
+			                    & " font-size='8'"
+			                    & " font-weight='600'"
+			                    & " fill='#FFFFFF'>"
+			                    & FORMAT(__ValAperturados, "#,0")
+			                    & "</text>"
+			            )
+			
+			        VAR __SegmentoCerrados =
+			            IF(
+			                ISBLANK([@Cerrados]),
+			                "",
+			                "<rect x='" & FORMAT(__X, "0.00", "en-US") & "'"
+			                    & " y='" & FORMAT(__YTotal, "0.00", "en-US") & "'"
+			                    & " width='" & FORMAT(__AnchoBarra, "0.00", "en-US") & "'"
+			                    & " height='" & FORMAT(MAX(__AltoCerrados, 1), "0.00", "en-US") & "'"
+			                    & " fill='" & PATHITEM([DS_Paleta], 4) & "' rx='1.5'>"
+			                    & "<title>Cerrados: " & FORMAT(__ValCerrados, "#,0") & "</title>"
+			                    & "</rect>"
+			                    &
+			                "<text"
+			                    & " x='" & FORMAT(__CentroBarra, "0.00", "en-US") & "'"
+			                    & " y='" & FORMAT((__YTotal + __YAperturados) / 2 + 3, "0.00", "en-US") & "'"
+			                    & " text-anchor='middle'"
+			                    & " font-family='Segoe UI'"
+			                    & " font-size='8'"
+			                    & " font-weight='600'"
+			                    & " fill='#22345C'>"
+			                    & FORMAT(__ValCerrados, "#,0")
+			                    & "</text>"
+			            )
+			
+			        RETURN __SegmentoAperturados & __SegmentoCerrados,
+			
+			        "", [@Indice], ASC
+			    )
+			
+			/* ============================================================
+			   5. Puntos y marcadores de la linea %Cerrados (eje secundario)
+			   ============================================================ */
+			VAR __PuntosPct =
+			    CONCATENATEX(
+			        FILTER(__Totales, [@Total] > 0),
+			
+			        VAR __Indice = [@Indice]
+			        VAR __CentroX = __MargenX + (__Indice * __AnchoSlot) + (__AnchoSlot / 2)
+			        VAR __Pct = DIVIDE([@Cerrados], [@Total], 0)
+			        VAR __Y =
+			            __MargenSuperior + __AltoPlot
+			                - DIVIDE(__Pct - __MinEscalaPct, __RangoPct, 0) * __AltoPlot
+			        RETURN
+			            FORMAT(__CentroX, "0.00", "en-US") & "," & FORMAT(__Y, "0.00", "en-US"),
+			
+			        " ", [@Indice], ASC
+			    )
+			
+			VAR __MarcadoresPct =
+			    CONCATENATEX(
+			        FILTER(__Totales, [@Total] > 0),
+			
+			        VAR __Indice = [@Indice]
+			        VAR __CentroX = __MargenX + (__Indice * __AnchoSlot) + (__AnchoSlot / 2)
+			        VAR __Pct = DIVIDE([@Cerrados], [@Total], 0)
+			        VAR __Y =
+			            __MargenSuperior + __AltoPlot
+			                - DIVIDE(__Pct - __MinEscalaPct, __RangoPct, 0) * __AltoPlot
+			        RETURN
+			            "<circle cx='" & FORMAT(__CentroX, "0.00", "en-US") & "' cy='" & FORMAT(__Y, "0.00", "en-US") & "'"
+			                & " r='3.5' fill='" & PATHITEM([DS_Paleta], 6) & "' stroke='#FFFFFF' stroke-width='1.2'>"
+			                & "<title>% Cerrados: " & FORMAT(__Pct, "0.0%") & "</title></circle>"
+			                & "<text x='" & FORMAT(__CentroX, "0.00", "en-US") & "' y='" & FORMAT(__Y - 7, "0.00", "en-US") & "'"
+			                & " text-anchor='middle' font-family='Segoe UI' font-size='9' font-weight='600' fill='" & PATHITEM([DS_Paleta], 6) & "'>"
+			                & FORMAT(__Pct, "0%") & "</text>",
+			
+			        "", [@Indice], ASC
+			    )
+			
+			/* ============================================================
+			   6. Etiquetas del eje X -- posicion absoluta en %, misma formula que las barras
+			   ============================================================ */
+			VAR __EtiquetasHTML =
+			    CONCATENATEX(
+			        __Categorias,
+			        VAR __Indice = [@Indice]
+			        VAR __CentroX = __MargenX + (__Indice * __AnchoSlot) + (__AnchoSlot / 2)
+			        VAR __PctX = DIVIDE(__CentroX, __AnchoSVG, 0) * 100
+			        RETURN
+			            "<div style='position:absolute;left:" & FORMAT(__PctX, "0.00", "en-US") & "%;top:0;"
+			                & "transform:translateX(-50%);font-size:8px;color:" & [DS_Color_TextoSecundario] & ";white-space:nowrap;overflow:hidden;'>"
+			                & [@Etiqueta] & "</div>",
+			        "", [@Indice], ASC
+			    )
+			
+			RETURN
+			    "<div style='height:100%;max-height:100%;" & [DS_Contenedor_Estilo] & "'>"
+			
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>"
+			        & "Aperturados vs Cerrados"
+			        & "</div>"
+			
+			        & IF(
+			            __SinDatos,
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			
+			            "<div style='flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;'>"
+			
+			                & "<div style='height:200px;box-sizing:border-box;overflow:hidden;position:relative;'>"
+			                    & "<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'"
+			                        & " viewBox='0 0 " & FORMAT(__AnchoSVG, "0", "en-US") & " " & FORMAT(__AltoSVG, "0", "en-US") & "'"
+			                        & " preserveAspectRatio='none' style='display:block;'>"
+			
+			                        & "<line x1='" & FORMAT(__MargenX, "0", "en-US") & "' y1='" & FORMAT(__ZeroYCol, "0.00", "en-US") & "'"
+			                            & " x2='" & FORMAT(__AnchoSVG - __MargenX, "0", "en-US") & "' y2='" & FORMAT(__ZeroYCol, "0.00", "en-US") & "'"
+			                            & " stroke='" & [DS_Color_Divisor] & "' stroke-width='1' stroke-dasharray='5,5'></line>"
+			
+			                        & __BarrasHTML
+			
+			                        & IF(
+			                            COUNTROWS(FILTER(__Totales, [@Total] > 0)) >= 2,
+			                            "<polyline points='" & __PuntosPct & "' fill='none' stroke='" & PATHITEM([DS_Paleta], 6) & "' stroke-width='2'"
+			                                & " stroke-linecap='round' stroke-linejoin='round'></polyline>",
+			                            ""
+			                        )
+			
+			                        & __MarcadoresPct
+			
+			                    & "</svg>"
+			                & "</div>"
+			
+			                & "<div style='position:relative;height:16px;min-height:16px;box-sizing:border-box;'>"
+			                    & __EtiquetasHTML
+			                & "</div>"
+			
+			                & "<div style='display:flex;align-items:center;justify-content:center;flex-wrap:wrap;height:16px;min-height:16px;overflow:hidden;'>"
+			                    & "<span style='display:inline-flex;align-items:center;gap:4px;margin-right:10px;font-size:8px;color:" & [DS_Color_TextoSecundario] & ";'>"
+			                        & "<span style='width:10px;height:10px;background:" & PATHITEM([DS_Paleta], 2) & ";display:inline-block;border-radius:2px;'></span>Aperturados</span>"
+			                    & "<span style='display:inline-flex;align-items:center;gap:4px;margin-right:10px;font-size:8px;color:" & [DS_Color_TextoSecundario] & ";'>"
+			                        & "<span style='width:10px;height:10px;background:" & PATHITEM([DS_Paleta], 4) & ";display:inline-block;border-radius:2px;'></span>Cerrados</span>"
+			                    & "<span style='display:inline-flex;align-items:center;gap:4px;font-size:8px;color:" & [DS_Color_TextoSecundario] & ";'>"
+			                        & "<span style='width:10px;height:2px;background:" & PATHITEM([DS_Paleta], 6) & ";display:inline-block;'></span>% Cerrados</span>"
+			                & "</div>"
+			            & "</div>"
+			        )
+			
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: 7a8b9c0d-0001-4e11-9d01-000000000001
 
 	column Column1
 		lineageTag: ae78e056-9e0e-4ce8-9fa5-33a23c78a09b

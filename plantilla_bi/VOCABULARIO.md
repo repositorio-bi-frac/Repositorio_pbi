@@ -32,7 +32,7 @@ Abrilo en Power BI Desktop: no pide credenciales, los datos se generan en DAX.
 
 **Banda de contenido:** de **x=261,7** a **1241,6**, o sea **979,9 px**. Primera fila en **y=94,8**.
 
-### Los 14 modelos de gráfico
+### Los 15 modelos de gráfico
 
 Uno por modelo. Si hace falta otro igual, se copia la medida y se le cambian la tabla, la columna y el título.
 
@@ -45,7 +45,8 @@ Uno por modelo. Si hace falta otro igual, se copia la medida y se le cambian la 
 | **barras horizontales agrupadas** por entidad (persona/agente/técnico), series **por medida** | `HTML_Barras_Horizontales_Agrupadas` | 240 (libre — con 20-30+ categorías conviene más alto, ej. 480-600) |
 | **barras horizontales apiladas** por estado | `HTML_Backlog_Barras_AgenteEstado` | 190 |
 | **barras horizontales simples** (ranking con Top N) | `HTML_Vision_Barras_Cliente` | 180 |
-| **combo** barras + línea | `HTML_Vision_Combo_Volumetria` | 200 |
+| **columnas apiladas por grupo** (OJO: pese al nombre, NO es un combo — no dibuja ninguna línea) | `HTML_Vision_Combo_Volumetria` | 200 |
+| **combo real** — columna apilada + **línea en eje secundario** | `HTML_Combo_AperturadosCerrados` | 200 |
 | **dona** con leyenda al costado | `HTML_Donut_Estados` | 280 |
 | **líneas** con marcadores y valores | `HTML_Backlog_Lineas_Balance` | 190 |
 | **área** acumulada | `HTML_Backlog_Area_Backlog` | 190 |
