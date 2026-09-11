@@ -32,7 +32,7 @@ Abrilo en Power BI Desktop: no pide credenciales, los datos se generan en DAX.
 
 **Banda de contenido:** de **x=261,7** a **1241,6**, o sea **979,9 px**. Primera fila en **y=94,8**.
 
-### Los 15 modelos de gráfico
+### Los 17 modelos de gráfico
 
 Uno por modelo. Si hace falta otro igual, se copia la medida y se le cambian la tabla, la columna y el título.
 
@@ -52,6 +52,7 @@ Uno por modelo. Si hace falta otro igual, se copia la medida y se le cambian la 
 | **área** acumulada | `HTML_Backlog_Area_Backlog` | 190 |
 | **matriz jerárquica** de 2 niveles, periodos en columnas | `HTML_Volumetria_MatrizSoporte` | 290 |
 | **matriz plana** de 1 nivel | `HTML_Volumetria_MatrizAgentes` | 180 |
+| **matriz cruzada** (tabla dinámica real: dimensión en filas × dimensión en columnas × 1 medida en la intersección) | `HTML_Matriz_Cruzada` | libre (scroll con encabezado/1ª columna sticky) |
 | **tabla de detalle** | `HTML_Registro_Tabla` | 280 |
 | **box plot de cuartiles** con descripción automática | `HTML_Cuartiles_Tiempos` | 230 |
 

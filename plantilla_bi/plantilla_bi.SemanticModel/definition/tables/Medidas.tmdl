@@ -4112,6 +4112,120 @@ table Medidas
 		displayFolder: Diseno HTML\Graficos
 		lineageTag: 7a8b9c0d-0001-4e11-9d01-000000000001
 
+	/// ================================================================
+	/// MODELO NUEVO 4: MATRIZ CRUZADA (fila x columna x 1 medida)
+	/// El "crosstab" real de tabla dinamica: una dimension en filas, otra en
+	/// columnas, y UNA sola medida en la interseccion -- distinto de
+	/// HTML_Matriz_Medidas (esa pone VARIAS medidas como columnas fijas) y de
+	/// HTML_Volumetria_MatrizSoporte/MatrizAgentes (jerarquia de filas, sin
+	/// una segunda dimension real en columnas).
+	///
+	/// Para reutilizarlo: cambiar la dimension de fila (__Filas, con su
+	/// columna de orden natural), la de columna (__Columnas, con su
+	/// "@OrdenColumna") y la medida en la interseccion (CALCULATE(...) dentro
+	/// de @TotalFila/@TotalColumna/__Valor) y el titulo. Si la columna no
+	/// tiene un orden de negocio, quitar "@OrdenColumna" y ordenar
+	/// alfabetico con la propia columna.
+	///
+	/// Numero de columnas dinamico: grid-template-columns se arma con
+	/// CONCATENATEX sobre __Columnas, no con un numero fijo -- funciona igual
+	/// con 2 columnas que con 20 (cada nueva columna del origen aparece sola,
+	/// sin tocar la medida).
+	///
+	/// Primera columna y fila de encabezado con position:sticky (left/top)
+	/// para que, si hay scroll horizontal o vertical, la etiqueta de fila y
+	/// los nombres de columna sigan visibles -- necesario aca porque el total
+	/// de columnas es variable y puede no caber en el ancho del visual.
+	/// ================================================================
+	measure HTML_Matriz_Cruzada =
+			VAR __Filas =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(Tabla_Combinada, tb_dim_status[status], tb_dim_status[id_status]),
+			            "@TotalFila", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@TotalFila] > 0
+			    )
+			VAR __Columnas =
+			    FILTER(
+			        ADDCOLUMNS(
+			            SUMMARIZE(Tabla_Combinada, Tabla_Combinada[turno]),
+			            "@OrdenColumna",
+			                SWITCH(
+			                    Tabla_Combinada[turno],
+			                    "Manana", 1, "Tarde", 2, "Noche", 3, 9
+			                ),
+			            "@TotalColumna", CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			        ),
+			        [@TotalColumna] > 0
+			    )
+			VAR __CantidadFilas = COALESCE(COUNTROWS(__Filas), 0)
+			VAR __CantidadColumnas = COALESCE(COUNTROWS(__Columnas), 0)
+			VAR __TotalGeneral = CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			VAR __SinDatos = __CantidadFilas = 0 || __CantidadColumnas = 0
+			VAR __PlantillaColumnas =
+			    "max-content "
+			        & CONCATENATEX(__Columnas, "minmax(56px,1fr)", " ", [@OrdenColumna], ASC)
+			        & " minmax(60px,1fr)"
+			VAR __Encabezado =
+			    "<div style='position:sticky;left:0;top:0;z-index:2;background:" & [DS_Color_TituloTexto] & ";'></div>"
+			        & CONCATENATEX(
+			            __Columnas,
+			            "<div style='font-size:9px;font-weight:700;color:#FFFFFF;background:" & [DS_Color_TituloTexto] & ";padding:4px 6px;position:sticky;top:0;text-align:right;box-sizing:border-box;white-space:nowrap;'>" & UPPER(Tabla_Combinada[turno]) & "</div>",
+			            "",
+			            [@OrdenColumna], ASC
+			        )
+			        & "<div style='font-size:9px;font-weight:700;color:#FFFFFF;background:" & [DS_Color_TituloTexto] & ";padding:4px 6px;position:sticky;top:0;text-align:right;box-sizing:border-box;border-radius:0 4px 0 0;'>TOTAL</div>"
+			VAR __Cuerpo =
+			    CONCATENATEX(
+			        __Filas,
+			        VAR __EtqFila = IF(ISBLANK(tb_dim_status[status]) || tb_dim_status[status] = "", "(Sin dato)", tb_dim_status[status])
+			        VAR __TotalFila = [@TotalFila]
+			        VAR __Celdas =
+			            CONCATENATEX(
+			                __Columnas,
+			                VAR __Valor = CALCULATE(DISTINCTCOUNT(Tabla_Combinada[incident_number]))
+			                RETURN
+			                    "<div style='font-size:10px;font-weight:600;color:" & [DS_Color_TituloTexto] & ";padding:4px 6px;text-align:right;border-bottom:1px solid #DCE6F5;box-sizing:border-box;'>"
+			                        & IF(COALESCE(__Valor, 0) = 0, "-", FORMAT(__Valor, "#,0"))
+			                    & "</div>",
+			                "",
+			                [@OrdenColumna], ASC
+			            )
+			        RETURN
+			            "<div title='" & __EtqFila & "' style='position:sticky;left:0;font-size:10px;font-weight:600;color:" & [DS_Color_TituloTexto] & ";background:#FFFFFF;padding:4px 6px;white-space:nowrap;border-bottom:1px solid #DCE6F5;box-sizing:border-box;'>" & __EtqFila & "</div>"
+			                & __Celdas
+			                & "<div style='font-size:10px;font-weight:700;color:" & [DS_Color_TituloTexto] & ";padding:4px 6px;text-align:right;border-bottom:1px solid #DCE6F5;box-sizing:border-box;background:#F5F8FD;'>" & FORMAT(__TotalFila, "#,0") & "</div>",
+			        "",
+			        tb_dim_status[id_status], ASC
+			    )
+			VAR __PieTotal =
+			    "<div style='position:sticky;left:0;font-size:10px;font-weight:700;color:" & [DS_Color_TituloTexto] & ";background:#F5F8FD;padding:4px 6px;white-space:nowrap;box-sizing:border-box;'>TOTAL</div>"
+			        & CONCATENATEX(
+			            __Columnas,
+			            "<div style='font-size:10px;font-weight:700;color:" & [DS_Color_TituloTexto] & ";background:#F5F8FD;padding:4px 6px;text-align:right;box-sizing:border-box;'>" & FORMAT([@TotalColumna], "#,0") & "</div>",
+			            "",
+			            [@OrdenColumna], ASC
+			        )
+			        & "<div style='font-size:10px;font-weight:700;color:#FFFFFF;background:" & [DS_Color_TituloTexto] & ";padding:4px 6px;text-align:right;box-sizing:border-box;border-radius:0 0 4px 0;'>" & FORMAT(__TotalGeneral, "#,0") & "</div>"
+			RETURN
+			    "<div style='height:100%;max-height:100%;" & [DS_Contenedor_Estilo] & "'>"
+			        & "<div style='" & [DS_Titulo_Estilo] & "'>Casos por estado y turno &nbsp;&middot;&nbsp; " & FORMAT(__TotalGeneral, "#,0") & "</div>"
+			        & IF(
+			            __SinDatos,
+			            "<div style='" & [DS_SinDatos_Estilo] & "'>" & [DS_SinDatos_Mensaje] & "</div>",
+			            "<div style='flex:1 1 auto;min-height:0;overflow:auto;box-sizing:border-box;'>"
+			                & "<div style='display:grid;min-width:max-content;grid-template-columns:" & __PlantillaColumnas & ";'>"
+			                    & __Encabezado
+			                    & __Cuerpo
+			                    & __PieTotal
+			                & "</div>"
+			            & "</div>"
+			        )
+			    & "</div>"
+		displayFolder: Diseno HTML\Graficos
+		lineageTag: 7a8b9c0d-0002-4e11-9d01-000000000002
+
 	column Column1
 		lineageTag: ae78e056-9e0e-4ce8-9fa5-33a23c78a09b
 		isNameInferred
