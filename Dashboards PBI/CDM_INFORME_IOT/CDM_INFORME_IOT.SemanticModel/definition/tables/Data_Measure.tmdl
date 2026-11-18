@@ -1,0 +1,466 @@
+/// Medidas del informe. Una medida por indicador; todo el calculo pesado (aplica/cumple, N1/Resto, laborable...) viene ya resuelto de gold.
+table Data_Measure
+	lineageTag: 7480bcc2-66ee-5a12-98dd-5a193cc4f441
+
+	/// Tickets resueltos (BASE = Resueltos del original): es_resuelto = 1, fechados por fecha/hora de resolucion.
+	measure #_Resueltos =
+			CALCULATE(COUNTROWS(Data_Tickets), Data_Tickets[es_resuelto] = 1,
+			USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]),
+			USERELATIONSHIP(Data_Tickets[hora_resolucion], Data_Horario[CLASIFICACION]))
+		formatString: 0
+		isHidden
+		displayFolder: Base
+		lineageTag: b9ac584d-b06d-58f3-8820-be2eaddb82ff
+
+	/// Tickets (BASE = Abiertos del original): fechados por fecha/hora de creacion.
+	measure #_Abiertos = COUNTROWS(Data_Tickets)
+		formatString: 0
+		isHidden
+		displayFolder: Base
+		lineageTag: c34ae8e5-982c-5c96-8fe0-c0fc87bfa80b
+
+	measure #Volumetria_Tickets_Abiertos =
+			VAR DATO = [#_Abiertos]
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: #,0
+		displayFolder: Tickets
+		lineageTag: da38b92f-83bb-5fbb-baec-8aeaf36ed40e
+
+	measure #Volumetria_Tickets_Resueltos =
+			VAR DATO = [#_Resueltos]
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: #,0
+		displayFolder: Tickets
+		lineageTag: 6cd169ae-255a-5a34-8733-279de478164c
+
+	measure #Volumetria_Tickets_Gestionados_N1 =
+			VAR DATO = CALCULATE([#_Resueltos], Data_Resolutor[GRUPO_CERRADOS] = "N1")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: b39443f3-0c4d-510b-a1df-3225bffc79ea
+
+	measure #Volumetria_SolvedClosed =
+			VAR PERIODO = MAX(Data_Calendario[PERIODO])
+			VAR DATO = CALCULATE([#_Abiertos], Data_Tickets[periodo_creacion] = PERIODO, Data_Status[STATUS] = "Solved" || Data_Status[STATUS] = "Closed")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: 7e36d3cf-349e-5149-aa2e-705a357d6a4f
+
+	measure #Volumetria_Restored =
+			VAR PERIODO = MAX(Data_Calendario[PERIODO])
+			VAR DATO = CALCULATE([#_Abiertos], Data_Tickets[periodo_creacion] = PERIODO, Data_Status[STATUS] = "Restored")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: 71cc32ec-9408-5c5d-a92b-71bf4eaca906
+
+	measure #Volumetria_Activas =
+			VAR PERIODO = MAX(Data_Calendario[PERIODO])
+			VAR DATO = CALCULATE([#_Abiertos], Data_Tickets[periodo_creacion] = PERIODO, Data_Status[STATUS] = "Active")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: 0d4071fb-2157-5e3a-b2a3-110fb2b5e267
+
+	measure #Volumetria_Delayed =
+			VAR PERIODO = MAX(Data_Calendario[PERIODO])
+			VAR DATO = CALCULATE([#_Abiertos], Data_Tickets[periodo_creacion] = PERIODO, Data_Status[STATUS] = "Delayed")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: c0f69309-44db-570e-a370-a01fcd92e376
+
+	measure #Severidad_Major =
+			VAR PERIODO = MAX(Data_Calendario[PERIODO])
+			VAR DATO = CALCULATE([#_Abiertos], Data_Tickets[periodo_creacion] = PERIODO, Data_Severidad[SEVERITY] = "Major")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: e376f9be-8b30-5209-9d23-b86988e552a5
+
+	measure #Severidad_Minor =
+			VAR PERIODO = MAX(Data_Calendario[PERIODO])
+			VAR DATO = CALCULATE([#_Abiertos], Data_Tickets[periodo_creacion] = PERIODO, Data_Severidad[SEVERITY] = "Minor")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: 7cc0b2f5-5752-5fa7-b666-ddc012f4271f
+
+	measure #Severidad_Slight =
+			VAR PERIODO = MAX(Data_Calendario[PERIODO])
+			VAR DATO = CALCULATE([#_Abiertos], Data_Tickets[periodo_creacion] = PERIODO, Data_Severidad[SEVERITY] = "Slight")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: 5f91adf7-b224-5836-a58d-4252f321ba28
+
+	/// Tickets resueltos notificables (hechos.tb_fact_tickets_udo_gold.notificable, sql 022).
+	measure #Mayor_Notificable =
+			VAR DATO = CALCULATE([#_Resueltos], Data_Tickets[notificable] = "Yes")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: 6a01d0ea-7d7a-575f-b76a-2556b8c43d7d
+
+	measure #Participacion_N1 =
+			VAR PERIODO = MAX(Data_Calendario[PERIODO])
+			VAR DATO = CALCULATE([#_Abiertos], Data_Tickets[periodo_creacion] = PERIODO, Data_Resolutor[GRUPO_ABIERTOS] = "N1")
+			RETURN
+			DATO
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: 4e7b77d2-4bd4-54b5-b4d5-5f60797ab100
+
+	measure #Participacion_Resto =
+			VAR PERIODO = MAX(Data_Calendario[PERIODO])
+			VAR DATO = CALCULATE([#_Abiertos], Data_Tickets[periodo_creacion] = PERIODO, Data_Resolutor[GRUPO_ABIERTOS] = "Resto")
+			RETURN
+			DATO
+		formatString: 0
+		displayFolder: Tickets
+		lineageTag: 370bb63d-b937-5cb6-855a-215f42581dab
+
+	measure #Participacion_N1_Graph =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Resolutor[GRUPO_CERRADOS] = "N1")
+			VAR DENOMINADOR = [#_Resueltos]
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Tickets
+		lineageTag: 61746446-b1ba-5e79-ad75-1c18c87c40e4
+
+	measure #Participacion_Resto_Graph =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Resolutor[GRUPO_CERRADOS] = "Resto")
+			VAR DENOMINADOR = [#_Resueltos]
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Tickets
+		lineageTag: 9e6ab71e-ed3d-5397-b51d-a15d20f7666f
+
+	measure #Fecha_Extraccion = FORMAT(MAX(Data_Tickets[fecha_foto]), "DD/MM/YYYY")
+		displayFolder: Tickets
+		lineageTag: e91c88aa-0a0c-514a-a0a6-221c7824f963
+
+	measure #Proactividad =
+			VAR DATO = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Proactive")
+			RETURN
+			DATO
+		formatString: 0
+		displayFolder: Detección
+		lineageTag: e71ef203-29de-5551-8eda-18dedf57c246
+
+	measure #Reactividad =
+			VAR DATO = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Reactive")
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: #,0
+		displayFolder: Detección
+		lineageTag: d09bb9a3-4172-5d1c-9180-30815c6f69b2
+
+	measure #Proactividad_Critical =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Proactive", Data_Severidad[SEVERITY] = "Critical")
+			VAR DENOMINADOR = CALCULATE([#_Resueltos], Data_Severidad[SEVERITY] = "Critical")
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: #,0\ %;-#,0\ %;#,0\ %
+		displayFolder: Detección
+		lineageTag: 4020e346-ff32-58ad-ba02-acaf6b32a289
+
+	measure #Proactividad_Major =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Proactive", Data_Severidad[SEVERITY] = "Major")
+			VAR DENOMINADOR = CALCULATE([#_Resueltos], Data_Severidad[SEVERITY] = "Major")
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Detección
+		lineageTag: 94b7b7b1-bc15-513e-b4e4-33523413796c
+
+	measure #Proactividad_Minor =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Proactive", Data_Severidad[SEVERITY] = "Minor")
+			VAR DENOMINADOR = CALCULATE([#_Resueltos], Data_Severidad[SEVERITY] = "Minor")
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Detección
+		lineageTag: c5c7c1b2-7ca2-532e-8318-8e0af15bfa37
+
+	measure #Proactividad_Slight =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Proactive", Data_Severidad[SEVERITY] = "Slight")
+			VAR DENOMINADOR = CALCULATE([#_Resueltos], Data_Severidad[SEVERITY] = "Slight")
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Detección
+		lineageTag: 3f3082bf-2f2b-5908-9eee-17e3e5529086
+
+	measure #Reactividad_Critical =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Reactive", Data_Severidad[SEVERITY] = "Critical")
+			VAR DENOMINADOR = CALCULATE([#_Resueltos], Data_Severidad[SEVERITY] = "Critical")
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Detección
+		lineageTag: e594daa0-4b46-5d35-9e09-8f711599d2b7
+
+	measure #Reactividad_Major =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Reactive", Data_Severidad[SEVERITY] = "Major")
+			VAR DENOMINADOR = CALCULATE([#_Resueltos], Data_Severidad[SEVERITY] = "Major")
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Detección
+		lineageTag: 6c20b71f-8460-503b-b0a4-68f4070b8d67
+
+	measure #Reactividad_Minor =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Reactive", Data_Severidad[SEVERITY] = "Minor")
+			VAR DENOMINADOR = CALCULATE([#_Resueltos], Data_Severidad[SEVERITY] = "Minor")
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Detección
+		lineageTag: b8e67a5c-6483-5051-bed4-c4cf12026152
+
+	measure #Reactividad_Slight =
+			VAR NUMERADOR = CALCULATE([#_Resueltos], Data_Tickets[detection_mode] = "Reactive", Data_Severidad[SEVERITY] = "Slight")
+			VAR DENOMINADOR = CALCULATE([#_Resueltos], Data_Severidad[SEVERITY] = "Slight")
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Detección
+		lineageTag: 054b0db2-235e-5caf-adc5-821fa7dcf2b9
+
+	measure #KPI_DeteccionTemprana_Critica =
+			VAR NUMERADOR = CALCULATE(SUM(Data_Tickets[dt_cumple]), Data_Severidad[SEVERITY] = "Critical", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DENOMINADOR = CALCULATE(SUM(Data_Tickets[dt_aplica]), Data_Severidad[SEVERITY] = "Critical", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), "-", DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI
+		lineageTag: d32cdfc1-3ed6-5ec9-b4a0-e227f13ccc09
+
+	measure #KPI_DeteccionTemprana_Major =
+			VAR NUMERADOR = CALCULATE(SUM(Data_Tickets[dt_cumple]), Data_Severidad[SEVERITY] = "Major", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DENOMINADOR = CALCULATE(SUM(Data_Tickets[dt_aplica]), Data_Severidad[SEVERITY] = "Major", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), "-", DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI
+		lineageTag: 2cfa5a17-08dc-5208-83d6-389d793a1414
+
+	measure #KPI_DeteccionTemprana_Minor =
+			VAR NUMERADOR = CALCULATE(SUM(Data_Tickets[dt_cumple]), Data_Severidad[SEVERITY] = "Minor", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DENOMINADOR = CALCULATE(SUM(Data_Tickets[dt_aplica]), Data_Severidad[SEVERITY] = "Minor", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), "-", DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI
+		lineageTag: 596d9dd1-8d13-51e9-b878-293a4ffa7ab9
+
+	measure #KPI_TiempoAtencion_Critica =
+			VAR NUMERADOR = CALCULATE(SUM(Data_Tickets[ta_cumple]), Data_Severidad[SEVERITY] = "Critical", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DENOMINADOR = CALCULATE(SUM(Data_Tickets[ta_aplica]), Data_Severidad[SEVERITY] = "Critical", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), "-", DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI
+		lineageTag: f5a9cf4d-c2b4-512f-988b-51f791bec82b
+
+	measure #KPI_TiempoAtencion_Major =
+			VAR NUMERADOR = CALCULATE(SUM(Data_Tickets[ta_cumple]), Data_Severidad[SEVERITY] = "Major", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DENOMINADOR = CALCULATE(SUM(Data_Tickets[ta_aplica]), Data_Severidad[SEVERITY] = "Major", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), "-", DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI
+		lineageTag: afdf27b1-16db-5482-93e7-dc3f241b293f
+
+	measure #KPI_TiempoAtencion_Minor =
+			VAR NUMERADOR = CALCULATE(SUM(Data_Tickets[ta_cumple]), Data_Severidad[SEVERITY] = "Minor", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DENOMINADOR = CALCULATE(SUM(Data_Tickets[ta_aplica]), Data_Severidad[SEVERITY] = "Minor", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), "-", DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI
+		lineageTag: a32aa4e6-f5ef-571f-a973-e8366f12ea8b
+
+	measure #KPI_TicketsRestauradosN1_Critica = "NA"
+		displayFolder: KPI
+		lineageTag: 792628a3-21ff-5617-bb20-de20c7405112
+
+	measure #KPI_TicketsRestauradosN1_Major =
+			VAR NUMERADOR = CALCULATE(SUM(Data_Tickets[rn1_cumple]), Data_Severidad[SEVERITY] = "Major", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DENOMINADOR = CALCULATE(SUM(Data_Tickets[rn1_aplica]), Data_Severidad[SEVERITY] = "Major", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), "-", DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI
+		lineageTag: d31f6dfc-be65-561e-bd53-c9d9428a53cd
+
+	measure #KPI_TicketsRestauradosN1_Minor =
+			VAR NUMERADOR = CALCULATE(SUM(Data_Tickets[rn1_cumple]), Data_Severidad[SEVERITY] = "Minor", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DENOMINADOR = CALCULATE(SUM(Data_Tickets[rn1_aplica]), Data_Severidad[SEVERITY] = "Minor", USERELATIONSHIP(Data_Tickets[fecha_resolucion], Data_Calendario[FECHA]))
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), "-", DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI
+		lineageTag: b50ba2f3-e4e0-5b48-aa50-a6e368d333b3
+
+	measure #KPI_InformacionActualizada_UDO =
+			VAR NUMERADOR = SUM(Data_Tickets[udo_cumple])
+			VAR DENOMINADOR = SUM(Data_Tickets[udo_aplica])
+			VAR DATO = DIVIDE(NUMERADOR, DENOMINADOR)
+			RETURN
+			IF(ISBLANK(DATO), "-", DATO)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI
+		lineageTag: d5c7e9c1-f989-5714-8aaf-8abba334799c
+
+	/// Hay tickets abiertos con informacion UDO sin actualizar (>= 24 h): marca de color del KPI.
+	measure '## Marca_Color_UDO' =
+			VAR VAL = CALCULATE(COUNTROWS(Data_Tickets), Data_Tickets[udo_aplica] = 1, Data_Tickets[udo_cumple] = 0)
+			VAR COLOR = IF(VAL <> 0, 1, 0)
+			RETURN
+			COLOR
+		formatString: 0
+		displayFolder: KPI
+		lineageTag: a5078191-09aa-59de-b83b-467bc6b19ff9
+
+	measure #Llamadas_Recibidas =
+			VAR DATO = SUM(Data_Llamadas[recibida])
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Llamadas
+		lineageTag: 482af284-1ada-59c5-b08e-43d54840ddfa
+
+	measure #Llamadas_Atendidas =
+			VAR DATO = SUM(Data_Llamadas[atendida_in])
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Llamadas
+		lineageTag: e7947ffb-737a-5c86-b98f-dc1ece8cd97b
+
+	measure #Llamadas_Escapadas =
+			VAR DATO = CALCULATE(SUM(Data_Llamadas[recibida]), Data_Llamadas[estado] = "ABANDON" || Data_Llamadas[estado] = "EXITWITHTIMEOUT", Data_Llamadas[tiempo_hold] < 15)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Llamadas
+		lineageTag: 87b49c55-9ecb-541d-b2b4-b8ad1d4627fe
+
+	measure #Llamadas_Abandonadas =
+			VAR DATO = CALCULATE(SUM(Data_Llamadas[recibida]), Data_Llamadas[estado] = "ABANDON" || Data_Llamadas[estado] = "EXITWITHTIMEOUT", Data_Llamadas[tiempo_hold] >= 15)
+			RETURN
+			IF(ISBLANK(DATO), 0, DATO)
+		formatString: 0
+		displayFolder: Llamadas
+		lineageTag: f06e81ca-c381-5988-b5da-2abe2d6c848a
+
+	measure #NDA = IFERROR(([#Llamadas_Atendidas] + [#Llamadas_Escapadas]) / [#Llamadas_Recibidas], "-")
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Llamadas
+		lineageTag: ef14ad5b-3f4d-5c8f-ac40-745db6fed69e
+
+	measure #NDA_Graph = IFERROR(([#Llamadas_Atendidas] + [#Llamadas_Escapadas]) / [#Llamadas_Recibidas], 0)
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: Llamadas
+		lineageTag: 3cbed7bb-0054-5af4-879e-9d5932d65411
+
+	measure #TME_Entrante = CALCULATE(AVERAGE(Data_Llamadas[tme]), Data_Llamadas[atendida_in] = 1)
+		formatString: 0
+		displayFolder: Llamadas
+		lineageTag: a43a6733-53bb-54a4-b48e-a92ca98b3ce9
+
+	measure #TMA_Entrante = CALCULATE(AVERAGE(Data_Llamadas[tma]), Data_Llamadas[atendida_in] = 1)
+		formatString: 0
+		displayFolder: Llamadas
+		lineageTag: 2098a858-b1c1-51af-89db-da2e6d6031de
+
+	measure #Periodo = MAX(Data_Calendario[PERIODO_NOMBRE])
+		displayFolder: Títulos
+		lineageTag: 1aa0e588-140f-50d6-a596-bbffa882b1c2
+
+	measure #Titulo_Kite = "KITE (CS_SM2MS)"
+		displayFolder: Títulos
+		lineageTag: 4a1585d8-7739-5e68-94e6-41c6775cb0ab
+
+	measure #Titulo_Jasper = "JASPER (CS_M2M)"
+		displayFolder: Títulos
+		lineageTag: 0e8e6077-66b6-53be-87b3-5c1d1897d7ce
+
+	measure #Titulo_Global_SIM = "GLOBAL SIM (CS_GLOBAL SIM)"
+		displayFolder: Títulos
+		lineageTag: e0cf2d45-3bf2-5341-8ff8-b327fdca9b03
+
+	measure #Titulo_General = "Informe de Operación" & UNICHAR(10) & "Servicio IoT"
+		displayFolder: Títulos
+		lineageTag: 3fe1db9a-6ee9-5811-ae9c-a7bbcc7f4cf3
+
+	measure Status =
+			VAR ContrasenaVacia = [Contraseña Value] = BLANK()
+			VAR Conforme = [Contraseña Value] = 1296
+			RETURN
+			IF(ContrasenaVacia, "Ingrese Contraseña", IF(Conforme, "Contraseña correcta", "Contraseña incorrecta"))
+		displayFolder: Seguridad
+		lineageTag: 9bd041cc-2e5d-58db-b47d-e681b6861a4b
+
+	measure status_A =
+			VAR ContrasenaVacia = [Contraseña Value] = BLANK()
+			VAR Conforme = [Contraseña Value] = 1296
+			RETURN
+			IF(ContrasenaVacia, "Home", IF(Conforme, "Volumetría", "Home"))
+		displayFolder: Seguridad
+		lineageTag: 60cc3ba7-de81-527b-b5c3-508478bae7fe
+
+	column Column1
+		dataType: string
+		isHidden
+		lineageTag: 40f362b9-2493-59c1-a041-26de4ab7a944
+		summarizeBy: none
+		sourceColumn: Column1
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Measure = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [Column1 = text], {})
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,80 @@
+/// dimension.tb_dim_servicio_iot. SERVICE = nombre en informes (SM2MS se muestra como KITE).
+table Data_Servicio
+	lineageTag: acda7053-fc57-5971-947f-265f92b709f5
+
+	column id_servicio
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		lineageTag: a004c4c4-40db-52ef-87e0-7714587956d8
+		summarizeBy: none
+		sourceColumn: id_servicio
+
+		annotation SummarizationSetBy = Automatic
+
+	column SERVICE
+		dataType: string
+		lineageTag: b4a638cd-39b4-5618-807e-641ade07c1f5
+		summarizeBy: none
+		sourceColumn: servicio_reporte
+		sortByColumn: ORDEN
+
+		annotation SummarizationSetBy = Automatic
+
+	column SERVICIO_SILVER
+		dataType: string
+		lineageTag: 6921896c-5ce2-515d-bfc3-83479127b4c8
+		summarizeBy: none
+		sourceColumn: servicio
+
+		annotation SummarizationSetBy = Automatic
+
+	column GRUPO_SERVICIO
+		dataType: string
+		lineageTag: b8a9f950-36df-562a-8596-23ca48824d6b
+		summarizeBy: none
+		sourceColumn: grupo_servicio
+
+		annotation SummarizationSetBy = Automatic
+
+	column CUSTOMER_SERVICE
+		dataType: string
+		lineageTag: 1e553491-858e-5413-bd83-2cf15f2d3668
+		summarizeBy: none
+		sourceColumn: customer_service
+
+		annotation SummarizationSetBy = Automatic
+
+	column CARPETA_SFTP
+		dataType: string
+		isHidden
+		lineageTag: 0bf17658-908b-5b2c-b5b6-8bd3a9882c99
+		summarizeBy: none
+		sourceColumn: carpeta_sftp
+
+		annotation SummarizationSetBy = Automatic
+
+	column ORDEN
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 0c3ae8c0-c939-51d1-b10d-73d9b6bae182
+		summarizeBy: none
+		sourceColumn: orden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Servicio = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="dimension",Item="tb_dim_servicio_iot"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"id_servicio", "servicio_reporte", "servicio", "grupo_servicio", "customer_service", "carpeta_sftp", "orden"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_servicio", Int64.Type}, {"servicio_reporte", type text}, {"servicio", type text}, {"grupo_servicio", type text}, {"customer_service", type text}, {"carpeta_sftp", type text}, {"orden", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

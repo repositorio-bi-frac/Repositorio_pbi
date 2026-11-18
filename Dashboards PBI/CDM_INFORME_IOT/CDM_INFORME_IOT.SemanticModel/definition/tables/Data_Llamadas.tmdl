@@ -1,0 +1,281 @@
+/// hechos.tb_fact_llamadas_iot_gold filtrada a CLIENTE = IOT (es_cliente_iot = 1) y sin duplicados (n_dedup = 1), equivalente al Filtered Rows + Table.Distinct del PBIX original.
+table Data_Llamadas
+	lineageTag: d058c78e-4ff5-5ae6-8294-722c5c7862c9
+
+	column id_crudo
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8d55445e-386d-5e54-8e1a-889d1fef2703
+		summarizeBy: none
+		sourceColumn: id_crudo
+
+		annotation SummarizationSetBy = Automatic
+
+	column periodo
+		dataType: int64
+		formatString: 0
+		lineageTag: dff9de21-2f1e-59bb-afa9-349e83ae8ea7
+		summarizeBy: none
+		sourceColumn: periodo
+
+		annotation SummarizationSetBy = Automatic
+
+	column periodo_final
+		dataType: int64
+		formatString: 0
+		lineageTag: 99a60271-a5f7-54d4-b2fa-5807c9f422c3
+		summarizeBy: none
+		sourceColumn: periodo_final
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_tecnico
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 068d476f-5047-5063-8223-9270fd2b045b
+		summarizeBy: none
+		sourceColumn: id_tecnico
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_hora
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 39613aa6-83a2-542f-b290-e946db07a606
+		summarizeBy: none
+		sourceColumn: id_hora
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_llamada
+		dataType: string
+		lineageTag: 4ef60564-265f-5acb-81a5-ff69d26b929e
+		summarizeBy: none
+		sourceColumn: id_llamada
+
+		annotation SummarizationSetBy = Automatic
+
+	column did
+		dataType: string
+		lineageTag: d7361f59-765a-58a9-9627-34fddf0511ba
+		summarizeBy: none
+		sourceColumn: did
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_acuerdo
+		dataType: string
+		lineageTag: 1b87c9da-3e0b-5aa7-afbd-46383eccb8d0
+		summarizeBy: none
+		sourceColumn: nombre_acuerdo
+
+		annotation SummarizationSetBy = Automatic
+
+	column sentido
+		dataType: string
+		lineageTag: b2acc86f-b96f-50c8-83a4-9ca2b5859956
+		summarizeBy: none
+		sourceColumn: sentido
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado
+		dataType: string
+		lineageTag: 667820de-d39a-56d5-b115-da2eafbf14e0
+		summarizeBy: none
+		sourceColumn: estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column origen
+		dataType: string
+		lineageTag: ac26ad8d-08d7-5630-8e6c-cec9bcbbf5c5
+		summarizeBy: none
+		sourceColumn: origen
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_entrada_cola
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:mm
+		lineageTag: 97c77b86-4e75-5561-b329-b6951ceb17c3
+		summarizeBy: none
+		sourceColumn: fecha_entrada_cola
+
+		annotation SummarizationSetBy = Automatic
+
+	column timestamp_inicio
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:mm
+		lineageTag: e817356d-2bb4-521f-a2d9-3a1d31d52d18
+		summarizeBy: none
+		sourceColumn: timestamp_inicio
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_inicio
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f89dbda1-a926-5e00-b30e-b5c78026f634
+		summarizeBy: none
+		sourceColumn: fecha_inicio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column timestamp_final
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:mm
+		lineageTag: 40ea736b-e72c-5642-9134-fc872772567c
+		summarizeBy: none
+		sourceColumn: timestamp_final
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_final
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: fe61f253-e01e-5eea-bfc1-a4b0894136c9
+		summarizeBy: none
+		sourceColumn: fecha_final
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column tiempo_hold
+		dataType: int64
+		formatString: 0
+		lineageTag: f9c180a0-6691-595f-9a5d-11cb2e298a5b
+		summarizeBy: none
+		sourceColumn: tiempo_hold
+
+		annotation SummarizationSetBy = Automatic
+
+	column tiempo_ring
+		dataType: int64
+		formatString: 0
+		lineageTag: 55766a76-d4e6-5fb2-ab5c-ac3679e00a3a
+		summarizeBy: none
+		sourceColumn: tiempo_ring
+
+		annotation SummarizationSetBy = Automatic
+
+	column tiempo_acw
+		dataType: int64
+		formatString: 0
+		lineageTag: 18b464c5-4e62-551b-bcb2-29114a4e472a
+		summarizeBy: none
+		sourceColumn: tiempo_acw
+
+		annotation SummarizationSetBy = Automatic
+
+	column recibida
+		dataType: int64
+		formatString: 0
+		lineageTag: e9f5ba94-583f-5585-88d4-ccdc07f00f99
+		summarizeBy: none
+		sourceColumn: recibida
+
+		annotation SummarizationSetBy = Automatic
+
+	column atendida_in
+		dataType: int64
+		formatString: 0
+		lineageTag: 013d0adf-9556-5c54-8635-4100c68f1f2d
+		summarizeBy: none
+		sourceColumn: atendida_in
+
+		annotation SummarizationSetBy = Automatic
+
+	column saliente
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b05e183-63c8-585b-ba30-87ad1aaa2cac
+		summarizeBy: none
+		sourceColumn: saliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column atendida_out
+		dataType: int64
+		formatString: 0
+		lineageTag: 778420f1-35eb-565c-ae90-829ba7cbafd9
+		summarizeBy: none
+		sourceColumn: atendida_out
+
+		annotation SummarizationSetBy = Automatic
+
+	column escapada
+		dataType: int64
+		formatString: 0
+		lineageTag: 98368ce5-3818-5744-9bdf-7ad390fa1a57
+		summarizeBy: none
+		sourceColumn: escapada
+
+		annotation SummarizationSetBy = Automatic
+
+	column abandonada
+		dataType: int64
+		formatString: 0
+		lineageTag: 0375f97b-95b3-5488-8aef-0f45ae47a7b8
+		summarizeBy: none
+		sourceColumn: abandonada
+
+		annotation SummarizationSetBy = Automatic
+
+	column tme
+		dataType: int64
+		formatString: 0
+		lineageTag: 808037ba-8e3c-58c9-8cda-686070fbb968
+		summarizeBy: none
+		sourceColumn: tme
+
+		annotation SummarizationSetBy = Automatic
+
+	column tma
+		dataType: int64
+		formatString: 0
+		lineageTag: 3c48424c-9463-59f7-a84c-e3b12a39b561
+		summarizeBy: none
+		sourceColumn: tma
+
+		annotation SummarizationSetBy = Automatic
+
+	column tmafter
+		dataType: int64
+		formatString: 0
+		lineageTag: d09fe9cc-1123-5f81-a796-d6408ff0dba7
+		summarizeBy: none
+		sourceColumn: tmafter
+
+		annotation SummarizationSetBy = Automatic
+
+	column tmo
+		dataType: int64
+		formatString: 0
+		lineageTag: 81192806-fc2d-5840-a421-9755b17fd002
+		summarizeBy: none
+		sourceColumn: tmo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Llamadas = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="hechos",Item="tb_fact_llamadas_iot_gold"]}[Data],
+				    Filtrado = Table.SelectRows(Tabla, each [es_cliente_iot] = 1 and [n_dedup] = 1),
+				    Columnas = Table.SelectColumns(Filtrado, {"id_crudo", "periodo", "periodo_final", "id_tecnico", "id_hora", "id_llamada", "did", "nombre_acuerdo", "sentido", "estado", "origen", "fecha_entrada_cola", "timestamp_inicio", "fecha_inicio", "timestamp_final", "fecha_final", "tiempo_hold", "tiempo_ring", "tiempo_acw", "recibida", "atendida_in", "saliente", "atendida_out", "escapada", "abandonada", "tme", "tma", "tmafter", "tmo"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_crudo", Int64.Type}, {"periodo", Int64.Type}, {"periodo_final", Int64.Type}, {"id_tecnico", Int64.Type}, {"id_hora", Int64.Type}, {"id_llamada", type text}, {"did", type text}, {"nombre_acuerdo", type text}, {"sentido", type text}, {"estado", type text}, {"origen", type text}, {"fecha_entrada_cola", type datetime}, {"timestamp_inicio", type datetime}, {"fecha_inicio", type date}, {"timestamp_final", type datetime}, {"fecha_final", type date}, {"tiempo_hold", Int64.Type}, {"tiempo_ring", Int64.Type}, {"tiempo_acw", Int64.Type}, {"recibida", Int64.Type}, {"atendida_in", Int64.Type}, {"saliente", Int64.Type}, {"atendida_out", Int64.Type}, {"escapada", Int64.Type}, {"abandonada", Int64.Type}, {"tme", Int64.Type}, {"tma", Int64.Type}, {"tmafter", Int64.Type}, {"tmo", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

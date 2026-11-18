@@ -1,0 +1,217 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 388,
+        "y": 395.26259388986955
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1604.8428240254461,
+            "y": 683.66937422569845
+          },
+          "nodeIndex": "Data_Measure",
+          "nodeLineageTag": "7480bcc2-66ee-5a12-98dd-5a193cc4f441",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1888.8428240254461,
+            "y": 721.66937422569845
+          },
+          "nodeIndex": "Contraseña",
+          "nodeLineageTag": "c209351f-6c53-5f67-8228-3a7cdcd26e67",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 491.69548033402782,
+            "y": 691.13070819226846
+          },
+          "nodeIndex": "Data_Calendario",
+          "nodeLineageTag": "ea6b1d8a-9e2d-5186-814f-95cd5abb2627",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1370.8428240254461,
+            "y": 394.68251168131337
+          },
+          "nodeIndex": "Data_Grupo_Responsable",
+          "nodeLineageTag": "c167f2c5-aaf7-5643-8171-d7a5d8eff7eb",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 910.97072816659352,
+            "y": 190.3386930468364
+          },
+          "nodeIndex": "Data_Horario",
+          "nodeLineageTag": "b12f75c9-194d-5887-b4ce-ced7e42c6d6b",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 124.40292115023919,
+            "y": 1393.3387484513969
+          },
+          "nodeIndex": "Data_KPI",
+          "nodeLineageTag": "0bbe34a6-827e-5a51-a21e-7b83628fbbe4",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 320.45006516503258,
+            "y": 1043.9893898385071
+          },
+          "nodeIndex": "Data_KPI_SLA",
+          "nodeLineageTag": "b9acc4ad-efe0-592c-a944-b9f6ddd667ae",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1068.053028990902,
+            "y": 395.26259388986955
+          },
+          "nodeIndex": "Data_Llamadas",
+          "nodeLineageTag": "d058c78e-4ff5-5ae6-8294-722c5c7862c9",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 336.97451114495311,
+            "y": 162.0758027196373
+          },
+          "nodeIndex": "Data_Resolutor",
+          "nodeLineageTag": "d3d410b1-28e2-5420-9b93-0b5df9e7be71",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 605.35235469401835,
+            "y": 1188.8457984648878
+          },
+          "nodeIndex": "Data_Servicio",
+          "nodeLineageTag": "acda7053-fc57-5971-947f-265f92b709f5",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 847.18893948911,
+            "y": 747.38775982477523
+          },
+          "nodeIndex": "Data_Severidad",
+          "nodeLineageTag": "6bf71625-a4f6-558f-82f2-9b1d7fa0ba44",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 623.97684900809111,
+            "y": -50
+          },
+          "nodeIndex": "Data_Status",
+          "nodeLineageTag": "cd28f52e-3c19-5b68-b604-910ffd3ec765",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1225.6973447207006,
+            "y": 41.596188634518057
+          },
+          "nodeIndex": "Data_Tecnico",
+          "nodeLineageTag": "65f6dc61-61eb-5ffa-99cb-2351108bb353",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 624.08067408717739,
+            "y": 337.46281187147679
+          },
+          "nodeIndex": "Data_Tickets",
+          "nodeLineageTag": "4e18b337-9df6-5d36-b210-91be02999161",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 864.09691076321042
+          },
+          "nodeIndex": "Data_Tipo_Ticket",
+          "nodeLineageTag": "58b352c3-cdb5-5e38-99c9-1d549b82a671",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas las tablas",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas las tablas",
+  "defaultDiagram": "Todas las tablas"
+}

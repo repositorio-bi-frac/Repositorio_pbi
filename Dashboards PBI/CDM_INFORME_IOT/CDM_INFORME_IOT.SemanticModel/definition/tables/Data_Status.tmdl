@@ -1,0 +1,63 @@
+/// dimension.tb_dim_estado_ticket_iot
+table Data_Status
+	lineageTag: cd28f52e-3c19-5b68-b604-910ffd3ec765
+
+	column id_estado
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		lineageTag: 8bacba34-1e7d-5072-b38d-672b51bbeafa
+		summarizeBy: none
+		sourceColumn: id_estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column STATUS
+		dataType: string
+		lineageTag: 59cbf953-35ac-5366-ac80-fd9fc92c4052
+		summarizeBy: none
+		sourceColumn: estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column ES_ABIERTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 9f9fd0aa-c6e6-58e3-8aab-67b1a4774c63
+		summarizeBy: none
+		sourceColumn: es_abierto
+
+		annotation SummarizationSetBy = Automatic
+
+	column ES_RESUELTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 24d2c78b-7ddc-5469-aec8-645fb2147ba4
+		summarizeBy: none
+		sourceColumn: es_resuelto
+
+		annotation SummarizationSetBy = Automatic
+
+	column ES_CANCELADO
+		dataType: int64
+		formatString: 0
+		lineageTag: e7092e2b-07ac-521f-830e-cfea226e8ec6
+		summarizeBy: none
+		sourceColumn: es_cancelado
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Status = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="dimension",Item="tb_dim_estado_ticket_iot"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"id_estado", "estado", "es_abierto", "es_resuelto", "es_cancelado"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_estado", Int64.Type}, {"estado", type text}, {"es_abierto", Int64.Type}, {"es_resuelto", Int64.Type}, {"es_cancelado", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

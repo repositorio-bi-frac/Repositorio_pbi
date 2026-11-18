@@ -1,0 +1,102 @@
+/// dimension.tb_dim_tecnico_iot (llave: correo). Compartida por tickets y llamadas.
+table Data_Tecnico
+	lineageTag: 65f6dc61-61eb-5ffa-99cb-2351108bb353
+
+	column id_tecnico
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		lineageTag: f6654055-5ab5-589b-9129-28532997c875
+		summarizeBy: none
+		sourceColumn: id_tecnico
+
+		annotation SummarizationSetBy = Automatic
+
+	column CORREO
+		dataType: string
+		lineageTag: 186e7fc7-a2bd-5f19-8395-9bc1a5ec3a8d
+		summarizeBy: none
+		sourceColumn: correo
+
+		annotation SummarizationSetBy = Automatic
+
+	column TECNICO
+		dataType: string
+		lineageTag: 870562da-fef0-55b5-92bb-b411196d902e
+		summarizeBy: none
+		sourceColumn: tecnico
+
+		annotation SummarizationSetBy = Automatic
+
+	column LOGIN
+		dataType: string
+		lineageTag: c6da04cf-8d7e-52db-80c3-a279d8e80212
+		summarizeBy: none
+		sourceColumn: login
+
+		annotation SummarizationSetBy = Automatic
+
+	column LOGIN_UDO
+		dataType: string
+		lineageTag: 200b8059-9d98-5ede-bd5a-de63c9ec1ed0
+		summarizeBy: none
+		sourceColumn: login_udo
+
+		annotation SummarizationSetBy = Automatic
+
+	column EXTENSION
+		dataType: string
+		lineageTag: 70218dbe-609a-5e4f-8b84-98f8a560346d
+		summarizeBy: none
+		sourceColumn: extension
+
+		annotation SummarizationSetBy = Automatic
+
+	column ASTERNIC
+		dataType: string
+		lineageTag: 6d6f0b9b-fc49-582f-a73d-564d448474e0
+		summarizeBy: none
+		sourceColumn: asternic
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_EMPLEADO
+		dataType: string
+		lineageTag: 87e22b98-3f22-56bf-8a27-dd7b7070d529
+		summarizeBy: none
+		sourceColumn: id_empleado
+
+		annotation SummarizationSetBy = Automatic
+
+	column PRIMER_PERIODO
+		dataType: int64
+		formatString: 0
+		lineageTag: 7e404fce-d251-5e7b-ad11-31fb11b5f378
+		summarizeBy: none
+		sourceColumn: primer_periodo
+
+		annotation SummarizationSetBy = Automatic
+
+	column ULTIMO_PERIODO
+		dataType: int64
+		formatString: 0
+		lineageTag: ad66f7d1-d589-5565-a516-548e569fc6a8
+		summarizeBy: none
+		sourceColumn: ultimo_periodo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Tecnico = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="dimension",Item="tb_dim_tecnico_iot"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"id_tecnico", "correo", "tecnico", "login", "login_udo", "extension", "asternic", "id_empleado", "primer_periodo", "ultimo_periodo"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_tecnico", Int64.Type}, {"correo", type text}, {"tecnico", type text}, {"login", type text}, {"login_udo", type text}, {"extension", type text}, {"asternic", type text}, {"id_empleado", type text}, {"primer_periodo", Int64.Type}, {"ultimo_periodo", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

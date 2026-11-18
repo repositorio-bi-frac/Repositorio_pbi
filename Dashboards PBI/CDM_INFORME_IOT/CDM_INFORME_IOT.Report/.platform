@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "CDM_INFORME_IOT"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "8a082226-6466-50f7-9032-c3cfd66fbafb"
+  }
+}

@@ -1,0 +1,24 @@
+/// Servidor PostgreSQL de la plataforma de datos (cuenta de solo lectura rpt_powerbi_01/02/03, rol rol_reporting_pbi).
+expression Servidor_PostgreSQL = "4.210.66.89:5432" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 9e2d14c8-c11b-56ec-94aa-e8e4db34dda7
+	queryGroup: Conexion
+
+	annotation PBI_ResultType = Text
+
+/// Base TECH IoT (CECO 21000381): esquemas dimension y hechos (gold).
+expression Base_Datos = "bd_esp_tech_iot_21000381" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 27e4470a-5797-5b30-884e-5fadcca45212
+	queryGroup: Conexion
+
+	annotation PBI_ResultType = Text
+
+expression Origen_IoT =
+		let
+		    Origen = PostgreSQL.Database(Servidor_PostgreSQL, Base_Datos)
+		in
+		    Origen
+	lineageTag: 0a76e36e-2082-5024-a4c6-a7b4d454a8b4
+	queryGroup: Conexion
+
+	annotation PBI_ResultType = Exception
+

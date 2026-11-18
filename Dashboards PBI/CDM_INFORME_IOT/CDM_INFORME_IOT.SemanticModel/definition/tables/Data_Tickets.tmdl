@@ -1,0 +1,479 @@
+/// hechos.tb_fact_tickets_udo_gold: un ticket UDO (ultima version). Sustituye a Data_Tickets_Abiertos + Data_Tickets_Resueltos (BASE) del PBIX original: Abiertos = fecha_creacion, Resueltos = es_resuelto=1 por fecha_resolucion. Sin cancelados (como el original). Las marcas K_* son solo etiquetas de dt_/ta_/rn1_/udo_ (aplica/cumple vienen de gold).
+table Data_Tickets
+	lineageTag: 4e18b337-9df6-5d36-b210-91be02999161
+
+	column K_DETECCION_TEMPRANA = IF(Data_Tickets[dt_aplica] = 1, IF(Data_Tickets[dt_cumple] = 1, "Cumple SLA Detección Temprana", "No Cumple SLA Detección Temprana"), BLANK())
+		dataType: string
+		lineageTag: e5d29d61-c062-507a-9107-76ccca3de78f
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column K_TIEMPO_MEDIO_ATENCION = IF(Data_Tickets[ta_aplica] = 1, IF(Data_Tickets[ta_cumple] = 1, "Cumple SLA Tiempo Atención", "No Cumple SLA Tiempo Atención"), BLANK())
+		dataType: string
+		lineageTag: 175cc8f9-08b1-55ea-9c06-d2979df0806f
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column K_TICKETS_RESTAURADOS = IF(Data_Tickets[rn1_aplica] = 1 && NOT ISBLANK(Data_Tickets[rn1_cumple]), IF(Data_Tickets[rn1_cumple] = 1, "Cumple Restaurados N1", "No Cumple Restaurados N1"), BLANK())
+		dataType: string
+		lineageTag: f6a04160-61d5-52fa-9fef-0b25e5f6d1ec
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column K_UDO = IF(Data_Tickets[udo_aplica] = 1, IF(Data_Tickets[udo_cumple] = 1, "Cumple Actualización UDOs", "No Cumple Actualización UDOs"), BLANK())
+		dataType: string
+		lineageTag: 688601bb-e9fe-50ed-857d-a1d3ac0bb59b
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column carpeta_origen
+		dataType: string
+		isHidden
+		lineageTag: 8eacbcbb-d7d6-5c03-b336-14ab17678872
+		summarizeBy: none
+		sourceColumn: carpeta_origen
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_crudo
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e1ab69d6-87b4-552e-9c8c-61fdf4438701
+		summarizeBy: none
+		sourceColumn: id_crudo
+
+		annotation SummarizationSetBy = Automatic
+
+	column ticket_id
+		dataType: string
+		lineageTag: 24b87f69-bbf9-5420-9bcd-ab8d65e229bb
+		summarizeBy: none
+		sourceColumn: ticket_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_servicio
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: bcc751c3-95ce-516a-bfb8-3d76529ad914
+		summarizeBy: none
+		sourceColumn: id_servicio
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_severidad
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2fa0af8b-c295-52e9-b4ba-8be591eea3a3
+		summarizeBy: none
+		sourceColumn: id_severidad
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_estado
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 085e130a-7836-54e9-b51f-f675b0534ced
+		summarizeBy: none
+		sourceColumn: id_estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_tipo
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3f1a8373-fe4c-5737-82ae-b07772e2a00f
+		summarizeBy: none
+		sourceColumn: id_tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_grupo_responsable
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4cd4a43b-6296-5546-8bf1-f7ec49e6556c
+		summarizeBy: none
+		sourceColumn: id_grupo_responsable
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_resolutor
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f6247a6a-6a3e-52f4-8f48-5d9aeb49a7c9
+		summarizeBy: none
+		sourceColumn: id_resolutor
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_tecnico
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 32d991c6-5bb6-5f24-b16d-b693f7766820
+		summarizeBy: none
+		sourceColumn: id_tecnico
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_creacion
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 8223dd46-24e5-543d-b70f-cc39207ea1a3
+		summarizeBy: none
+		sourceColumn: fecha_creacion
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column periodo_creacion
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b6a0ec7c-06ce-5242-93c4-112503122dd2
+		summarizeBy: none
+		sourceColumn: periodo_creacion
+
+		annotation SummarizationSetBy = Automatic
+
+	column hora_creacion
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2350a50f-95df-5ec9-8aeb-64e0cf35964a
+		summarizeBy: none
+		sourceColumn: hora_creacion
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_hora_creacion
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:mm
+		lineageTag: dbce1535-df7d-5fcf-8bf7-3042e983641c
+		summarizeBy: none
+		sourceColumn: fecha_hora_creacion
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_resolucion
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 8fda8f92-189c-5232-883c-b1ff67abe98c
+		summarizeBy: none
+		sourceColumn: fecha_resolucion
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column periodo_resolucion
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: bdedea17-e2c5-543a-9164-4594e2460132
+		summarizeBy: none
+		sourceColumn: periodo_resolucion
+
+		annotation SummarizationSetBy = Automatic
+
+	column hora_resolucion
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 47a53f0e-8752-57cc-b063-0a302f96fa74
+		summarizeBy: none
+		sourceColumn: hora_resolucion
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_hora_resolucion
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:mm
+		lineageTag: 587f7fa4-338e-5a28-a042-639ff4ebbbc1
+		summarizeBy: none
+		sourceColumn: fecha_hora_resolucion
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_cierre
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:mm
+		lineageTag: 85b0b644-9968-563f-85cf-9941449f9bb4
+		summarizeBy: none
+		sourceColumn: fecha_cierre
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_restauracion
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:mm
+		lineageTag: 2ab8b30c-9c0f-5584-a51e-cd0272eeb22c
+		summarizeBy: none
+		sourceColumn: fecha_restauracion
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_ultimo_evento
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:mm
+		lineageTag: d84e8fd6-8d7f-514f-9bab-1ef0379fec56
+		summarizeBy: none
+		sourceColumn: fecha_ultimo_evento
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_foto
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ef4a4ead-431b-57cb-83ee-59b6d54a2ce6
+		summarizeBy: none
+		sourceColumn: fecha_foto
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column priority
+		dataType: string
+		lineageTag: c1b67a83-3b93-5b69-bc10-57313d38f4ae
+		summarizeBy: none
+		sourceColumn: priority
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_name
+		dataType: string
+		lineageTag: 5632b025-914a-576f-9cc0-4c1120c4d41b
+		summarizeBy: none
+		sourceColumn: customer_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column originator_group
+		dataType: string
+		lineageTag: 8a51c911-9c6e-5638-9163-042b8e7788b3
+		summarizeBy: none
+		sourceColumn: originator_group
+
+		annotation SummarizationSetBy = Automatic
+
+	column current_responsible_user
+		dataType: string
+		lineageTag: c7aa5e06-56a0-56e1-8156-815921064bfa
+		summarizeBy: none
+		sourceColumn: current_responsible_user
+
+		annotation SummarizationSetBy = Automatic
+
+	column leading_ob
+		dataType: string
+		lineageTag: 21bd853d-4484-583a-9703-d341eaaf6fa0
+		summarizeBy: none
+		sourceColumn: leading_ob
+
+		annotation SummarizationSetBy = Automatic
+
+	column detection_mode
+		dataType: string
+		lineageTag: f4369e15-7692-5855-a9a0-c6f228110210
+		summarizeBy: none
+		sourceColumn: detection_mode
+
+		annotation SummarizationSetBy = Automatic
+
+	column intraservice_reference
+		dataType: string
+		lineageTag: f6b4e9a7-8f60-50b9-85d5-2f62c3cef7ae
+		summarizeBy: none
+		sourceColumn: intraservice_reference
+
+		annotation SummarizationSetBy = Automatic
+
+	column interservice_reference
+		dataType: string
+		lineageTag: 37c10ab2-835f-5dfa-a9b7-00b0c1b2a6b2
+		summarizeBy: none
+		sourceColumn: interservice_reference
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo_ticket_provdsn
+		dataType: string
+		lineageTag: a067bf16-c050-544d-a90a-141f04898d84
+		summarizeBy: none
+		sourceColumn: tipo_ticket_provdsn
+
+		annotation SummarizationSetBy = Automatic
+
+	column notificable
+		dataType: string
+		lineageTag: 6de72c8b-089b-5ccf-a37e-720f979f7c88
+		summarizeBy: none
+		sourceColumn: notificable
+
+		annotation SummarizationSetBy = Automatic
+
+	column response_time_s
+		dataType: double
+		formatString: 0
+		lineageTag: 67b1d455-eef2-5752-9db0-8f02be7d47e0
+		summarizeBy: sum
+		sourceColumn: response_time_s
+
+		annotation SummarizationSetBy = Automatic
+
+	column restoration_time_s
+		dataType: double
+		formatString: 0
+		lineageTag: cabbebbd-bb69-576c-9fe6-a806f5fb0498
+		summarizeBy: sum
+		sourceColumn: restoration_time_s
+
+		annotation SummarizationSetBy = Automatic
+
+	column resolution_time_s
+		dataType: double
+		formatString: 0
+		lineageTag: c45cd766-4eeb-5838-8a4f-965555bdbeb9
+		summarizeBy: sum
+		sourceColumn: resolution_time_s
+
+		annotation SummarizationSetBy = Automatic
+
+	column horas_desde_ultimo_evento
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 115533cb-9804-56dd-9289-b760e536773e
+		summarizeBy: sum
+		sourceColumn: horas_desde_ultimo_evento
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_resuelto
+		dataType: int64
+		formatString: 0
+		lineageTag: 09ff58ec-d998-5d1e-8b9d-a92cc3fd5d04
+		summarizeBy: none
+		sourceColumn: es_resuelto
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_cancelado
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: fb20e242-ae66-5050-8d69-018f4005e720
+		summarizeBy: none
+		sourceColumn: es_cancelado
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_grupo_excluido
+		dataType: int64
+		formatString: 0
+		lineageTag: db09cfc1-dd37-5779-83d1-a37d2a8c7244
+		summarizeBy: none
+		sourceColumn: es_grupo_excluido
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_aplica
+		dataType: int64
+		formatString: 0
+		lineageTag: 8e8d828c-19af-56b9-ac6c-cebf22ba16c5
+		summarizeBy: none
+		sourceColumn: dt_aplica
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_cumple
+		dataType: int64
+		formatString: 0
+		lineageTag: a646d5e0-6862-57d7-bfa9-d372c99ea46a
+		summarizeBy: none
+		sourceColumn: dt_cumple
+
+		annotation SummarizationSetBy = Automatic
+
+	column ta_aplica
+		dataType: int64
+		formatString: 0
+		lineageTag: f4ecf5df-458c-5056-974f-ed2b5bada7b1
+		summarizeBy: none
+		sourceColumn: ta_aplica
+
+		annotation SummarizationSetBy = Automatic
+
+	column ta_cumple
+		dataType: int64
+		formatString: 0
+		lineageTag: 99d9f130-16a6-5b28-9126-468da9c6e812
+		summarizeBy: none
+		sourceColumn: ta_cumple
+
+		annotation SummarizationSetBy = Automatic
+
+	column rn1_aplica
+		dataType: int64
+		formatString: 0
+		lineageTag: b0651a27-b1a6-5819-80ee-c48798bdef5e
+		summarizeBy: none
+		sourceColumn: rn1_aplica
+
+		annotation SummarizationSetBy = Automatic
+
+	column rn1_cumple
+		dataType: int64
+		formatString: 0
+		lineageTag: 83871147-2d34-500c-87fa-052056e321f7
+		summarizeBy: none
+		sourceColumn: rn1_cumple
+
+		annotation SummarizationSetBy = Automatic
+
+	column udo_aplica
+		dataType: int64
+		formatString: 0
+		lineageTag: cd04bf27-13b1-5d2e-9785-c1d0caa3b048
+		summarizeBy: none
+		sourceColumn: udo_aplica
+
+		annotation SummarizationSetBy = Automatic
+
+	column udo_cumple
+		dataType: int64
+		formatString: 0
+		lineageTag: bf91dd16-331b-5d59-b2e0-8210a0cd667b
+		summarizeBy: none
+		sourceColumn: udo_cumple
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Tickets = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="hechos",Item="tb_fact_tickets_udo_gold"]}[Data],
+				    Filtrado = Table.SelectRows(Tabla, each [es_cancelado] = 0),
+				    Columnas = Table.SelectColumns(Filtrado, {"carpeta_origen", "id_crudo", "ticket_id", "id_servicio", "id_severidad", "id_estado", "id_tipo", "id_grupo_responsable", "id_resolutor", "id_tecnico", "fecha_creacion", "periodo_creacion", "hora_creacion", "fecha_hora_creacion", "fecha_resolucion", "periodo_resolucion", "hora_resolucion", "fecha_hora_resolucion", "fecha_cierre", "fecha_restauracion", "fecha_ultimo_evento", "fecha_foto", "priority", "customer_name", "originator_group", "current_responsible_user", "leading_ob", "detection_mode", "intraservice_reference", "interservice_reference", "tipo_ticket_provdsn", "notificable", "response_time_s", "restoration_time_s", "resolution_time_s", "horas_desde_ultimo_evento", "es_resuelto", "es_cancelado", "es_grupo_excluido", "dt_aplica", "dt_cumple", "ta_aplica", "ta_cumple", "rn1_aplica", "rn1_cumple", "udo_aplica", "udo_cumple"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"carpeta_origen", type text}, {"id_crudo", Int64.Type}, {"ticket_id", type text}, {"id_servicio", Int64.Type}, {"id_severidad", Int64.Type}, {"id_estado", Int64.Type}, {"id_tipo", Int64.Type}, {"id_grupo_responsable", Int64.Type}, {"id_resolutor", Int64.Type}, {"id_tecnico", Int64.Type}, {"fecha_creacion", type date}, {"periodo_creacion", Int64.Type}, {"hora_creacion", Int64.Type}, {"fecha_hora_creacion", type datetime}, {"fecha_resolucion", type date}, {"periodo_resolucion", Int64.Type}, {"hora_resolucion", Int64.Type}, {"fecha_hora_resolucion", type datetime}, {"fecha_cierre", type datetime}, {"fecha_restauracion", type datetime}, {"fecha_ultimo_evento", type datetime}, {"fecha_foto", type date}, {"priority", type text}, {"customer_name", type text}, {"originator_group", type text}, {"current_responsible_user", type text}, {"leading_ob", type text}, {"detection_mode", type text}, {"intraservice_reference", type text}, {"interservice_reference", type text}, {"tipo_ticket_provdsn", type text}, {"notificable", type text}, {"response_time_s", type number}, {"restoration_time_s", type number}, {"resolution_time_s", type number}, {"horas_desde_ultimo_evento", type number}, {"es_resuelto", Int64.Type}, {"es_cancelado", Int64.Type}, {"es_grupo_excluido", Int64.Type}, {"dt_aplica", Int64.Type}, {"dt_cumple", Int64.Type}, {"ta_aplica", Int64.Type}, {"ta_cumple", Int64.Type}, {"rn1_aplica", Int64.Type}, {"rn1_cumple", Int64.Type}, {"udo_aplica", Int64.Type}, {"udo_cumple", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

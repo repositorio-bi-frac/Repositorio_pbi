@@ -1,0 +1,53 @@
+/// dimension.tb_dim_grupo_responsable_iot. ES_EXCLUIDO_UDO = 1 reemplaza al VAL_UDO = 0 del PBIX original.
+table Data_Grupo_Responsable
+	lineageTag: c167f2c5-aaf7-5643-8171-d7a5d8eff7eb
+
+	column id_grupo_responsable
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		lineageTag: e54523c2-a2d0-5424-b63e-8a5583196c2a
+		summarizeBy: none
+		sourceColumn: id_grupo_responsable
+
+		annotation SummarizationSetBy = Automatic
+
+	column SERVICIO
+		dataType: string
+		lineageTag: e668f42e-c983-5b99-99a6-bb7e793d66d3
+		summarizeBy: none
+		sourceColumn: servicio
+
+		annotation SummarizationSetBy = Automatic
+
+	column GRUPO
+		dataType: string
+		lineageTag: 0f32c874-c774-53b7-9213-8a33a08ab0a6
+		summarizeBy: none
+		sourceColumn: grupo
+
+		annotation SummarizationSetBy = Automatic
+
+	column ES_EXCLUIDO_UDO
+		dataType: int64
+		formatString: 0
+		lineageTag: e874555c-9cf8-58a9-9397-b7de98a0b4e9
+		summarizeBy: none
+		sourceColumn: es_excluido_udo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Grupo_Responsable = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="dimension",Item="tb_dim_grupo_responsable_iot"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"id_grupo_responsable", "servicio", "grupo", "es_excluido_udo"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_grupo_responsable", Int64.Type}, {"servicio", type text}, {"grupo", type text}, {"es_excluido_udo", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

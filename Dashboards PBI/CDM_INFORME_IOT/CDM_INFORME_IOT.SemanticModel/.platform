@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "CDM_INFORME_IOT"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "97f14e37-c6c4-5a35-89e7-b3ca2403d109"
+  }
+}

@@ -1,0 +1,100 @@
+/// hechos.tb_fact_kpi_sla_iot_gold: numerador/denominador de los KPI de SLA por fecha, servicio, tipo y KPI.
+table Data_KPI_SLA
+	lineageTag: b9acc4ad-efe0-592c-a944-b9f6ddd667ae
+
+	/// % = SUM(numerador)/SUM(denominador) segun hechos.tb_fact_kpi_sla_iot_gold; filtrar por Data_KPI[INDICADOR]/[SEVERIDAD].
+	measure 'KPI SLA % (gold)' = DIVIDE(SUM(Data_KPI_SLA[numerador]), SUM(Data_KPI_SLA[denominador]))
+		formatString: 0.00\ %;-0.00\ %;0.00\ %
+		displayFolder: KPI SLA (gold)
+		lineageTag: 9b368d5b-d0f7-5dd4-9be6-bcf4ea6ccf1b
+
+	column fecha
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: d123156d-dd1c-5d02-9420-0e0bffcffec9
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column periodo
+		dataType: int64
+		formatString: 0
+		lineageTag: 43fefb3a-543f-5a02-a5d0-67f38766b615
+		summarizeBy: none
+		sourceColumn: periodo
+
+		annotation SummarizationSetBy = Automatic
+
+	column periodo_nombre
+		dataType: string
+		lineageTag: 338aa988-0eb3-549d-9c83-93c766ac2926
+		summarizeBy: none
+		sourceColumn: periodo_nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_servicio
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6fc1c264-d428-5b29-bbfd-c45a34c49c2d
+		summarizeBy: none
+		sourceColumn: id_servicio
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_tipo
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7d28bd9d-4b08-51a4-8028-0180a722d3f5
+		summarizeBy: none
+		sourceColumn: id_tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_kpi
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6e6f35b3-4ff1-5d85-8d29-109dcd3ab8b2
+		summarizeBy: none
+		sourceColumn: id_kpi
+
+		annotation SummarizationSetBy = Automatic
+
+	column numerador
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 90decda7-362e-595b-b978-43a9334baab7
+		summarizeBy: sum
+		sourceColumn: numerador
+
+		annotation SummarizationSetBy = Automatic
+
+	column denominador
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 6ab8119d-e5c2-589b-b65f-2b79287fe924
+		summarizeBy: sum
+		sourceColumn: denominador
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_KPI_SLA = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="hechos",Item="tb_fact_kpi_sla_iot_gold"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"fecha", "periodo", "periodo_nombre", "id_servicio", "id_tipo", "id_kpi", "numerador", "denominador"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"fecha", type date}, {"periodo", Int64.Type}, {"periodo_nombre", type text}, {"id_servicio", Int64.Type}, {"id_tipo", Int64.Type}, {"id_kpi", Int64.Type}, {"numerador", type number}, {"denominador", type number}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

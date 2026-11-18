@@ -1,0 +1,36 @@
+/// dimension.tb_dim_tipo_ticket_iot
+table Data_Tipo_Ticket
+	lineageTag: 58b352c3-cdb5-5e38-99c9-1d549b82a671
+
+	column id_tipo
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		lineageTag: c2190609-faff-5f41-a742-a65f06875251
+		summarizeBy: none
+		sourceColumn: id_tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column TYPE
+		dataType: string
+		lineageTag: 97b1491b-48e2-559e-ad9b-acf193032606
+		summarizeBy: none
+		sourceColumn: tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Tipo_Ticket = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="dimension",Item="tb_dim_tipo_ticket_iot"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"id_tipo", "tipo"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_tipo", Int64.Type}, {"tipo", type text}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

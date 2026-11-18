@@ -1,0 +1,147 @@
+/// dimension.tb_dim_calendario (FDW desde bd_metadata). Mismas columnas y jerarquia jTiempo del PBIX original; fecha > 2022-12-31 como el original.
+table Data_Calendario
+	lineageTag: ea6b1d8a-9e2d-5186-814f-95cd5abb2627
+	dataCategory: Time
+
+	column PERIODO = Data_Calendario[AÑO] * 100 + Data_Calendario[MES]
+		dataType: int64
+		formatString: 0
+		lineageTag: 5f4f980b-46be-5d30-a156-45f1d427b4f0
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column PERIODO_NOMBRE = Data_Calendario[MES_NOMBRE] & "-" & Data_Calendario[AÑO]
+		dataType: string
+		lineageTag: 28da72a6-2b6e-593d-8ee6-745bb23698f6
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column FECHA_M = IF(Data_Calendario[FECHA] <= TODAY(), Data_Calendario[FECHA], BLANK())
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 5934ef4a-14d7-5170-aa86-95229a682df2
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column DIA_NOMBRE = SWITCH(Data_Calendario[DIA_SEMANA], 1, "L", 2, "M", 3, "X", 4, "J", 5, "V", 6, "S", 7, "D")
+		dataType: string
+		lineageTag: c2a7d1c4-4b74-5561-b1cd-29a75a0efce6
+		summarizeBy: none
+		sortByColumn: DIA_SEMANA
+
+		annotation SummarizationSetBy = Automatic
+
+	column FECHA
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: 9d2aae5e-747f-564b-9ef0-cf0c62b43dd5
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ID_FECHA
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 43a2d0bc-2a9c-59a4-a9f9-ef30996dc9a7
+		summarizeBy: none
+		sourceColumn: id_fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	column DIA
+		dataType: int64
+		formatString: 0
+		lineageTag: 7bd14a48-46a7-550d-aa48-01db2bc82a25
+		summarizeBy: none
+		sourceColumn: dia
+
+		annotation SummarizationSetBy = Automatic
+
+	column MES
+		dataType: int64
+		formatString: 0
+		lineageTag: d4d3f9c2-b5c4-55d2-808d-b6fc11c155bb
+		summarizeBy: none
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column AÑO
+		dataType: int64
+		formatString: 0
+		lineageTag: d7fae12a-fe2c-5efd-a34f-e6ba47ea05b7
+		summarizeBy: none
+		sourceColumn: anio
+
+		annotation SummarizationSetBy = Automatic
+
+	column DIA_SEMANA
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4e23e230-1adf-58e7-86e8-e71925fedec1
+		summarizeBy: none
+		sourceColumn: dia_semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column MES_NOMBRE
+		dataType: string
+		lineageTag: f6abec3a-be3c-5148-804b-c11e9dda8ecc
+		summarizeBy: none
+		sourceColumn: nombre_mes
+		sortByColumn: MES
+
+		annotation SummarizationSetBy = Automatic
+
+	column NOMBRE_DIA
+		dataType: string
+		lineageTag: e19b1c3e-ef0e-5ecd-ba60-067f24ce6d67
+		summarizeBy: none
+		sourceColumn: nombre_dia
+		sortByColumn: DIA_SEMANA
+
+		annotation SummarizationSetBy = Automatic
+
+	column LABORABLE
+		dataType: boolean
+		lineageTag: 829a9d0c-2e09-5ed5-8a5d-d99ce6e01c32
+		summarizeBy: none
+		sourceColumn: es_laborable
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy jTiempo
+		lineageTag: d1626afb-f398-52f0-b425-b1989ea46bf2
+
+		level AÑO
+			lineageTag: 5527868d-d63e-5a55-a314-61b46383fdf5
+			column: AÑO
+
+		level MES
+			lineageTag: 10867360-3070-562d-a393-d9f8cfb457d9
+			column: MES_NOMBRE
+
+		level DIA
+			lineageTag: d7d52b5f-2fe2-5574-82fd-e6e513428a33
+			column: DIA
+
+	partition Data_Calendario = m
+		mode: import
+		source =
+				let
+				    Origen = PostgreSQL.Database(Servidor_PostgreSQL, Base_Datos, [Query = "select fecha, id_fecha, dia, mes, anio, dia_semana, nombre_mes, nombre_dia, es_laborable from dimension.tb_dim_calendario where fecha > date '2022-12-31'"]),
+				    Tipos = Table.TransformColumnTypes(Origen, {{"fecha", type date}, {"id_fecha", Int64.Type}, {"dia", Int64.Type}, {"mes", Int64.Type}, {"anio", Int64.Type}, {"dia_semana", Int64.Type}, {"nombre_mes", type text}, {"nombre_dia", type text}, {"es_laborable", type logical}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

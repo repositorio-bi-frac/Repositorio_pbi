@@ -1,0 +1,146 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.3.0/schema.json",
+  "themeCollection": {
+    "baseTheme": {
+      "name": "CY21SU11",
+      "reportVersionAtImport": {
+        "visual": "1.8.64",
+        "report": "2.0.64",
+        "page": "1.3.64"
+      },
+      "type": "SharedResources"
+    },
+    "customTheme": {
+      "name": "Temperature",
+      "reportVersionAtImport": {
+        "visual": "1.8.64",
+        "report": "2.0.64",
+        "page": "1.3.64"
+      },
+      "type": "SharedResources"
+    }
+  },
+  "objects": {
+    "section": [
+      {
+        "properties": {
+          "verticalAlignment": {
+            "expr": {
+              "Literal": {
+                "Value": "'Top'"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspacePane": [
+      {
+        "properties": {
+          "expanded": {
+            "expr": {
+              "Literal": {
+                "Value": "false"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "publicCustomVisuals": [
+    "PBI_CV_FFFE680D_D220_4F62_B16C_C7B5C5732654",
+    "TextEnhancerByMAQ46ASG0293G65JY43S89DKJ9"
+  ],
+  "resourcePackages": [
+    {
+      "name": "PBI_CV_FFFE680D_D220_4F62_B16C_C7B5C5732654",
+      "type": "CustomVisual",
+      "items": [
+        {
+          "name": "PBI_CV_FFFE680D_D220_4F62_B16C_C7B5C5732654.pbiviz.json",
+          "path": "PBI_CV_FFFE680D_D220_4F62_B16C_C7B5C5732654.pbiviz.json",
+          "type": "CustomVisualMetadata"
+        }
+      ]
+    },
+    {
+      "name": "SmartFilterProByOKVizCB16C7159C46796BE127BD0967321FDE",
+      "type": "CustomVisual",
+      "items": [
+        {
+          "name": "SmartFilterProByOKVizCB16C7159C46796BE127BD0967321FDE.pbiviz.json",
+          "path": "SmartFilterProByOKVizCB16C7159C46796BE127BD0967321FDE.pbiviz.json",
+          "type": "CustomVisualMetadata"
+        }
+      ]
+    },
+    {
+      "name": "TextEnhancerByMAQ46ASG0293G65JY43S89DKJ9",
+      "type": "CustomVisual",
+      "items": [
+        {
+          "name": "TextEnhancerByMAQ46ASG0293G65JY43S89DKJ9.pbiviz.json",
+          "path": "TextEnhancerByMAQ46ASG0293G65JY43S89DKJ9.pbiviz.json",
+          "type": "CustomVisualMetadata"
+        }
+      ]
+    },
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "c9edc36f-aec8-456b-b27f-40be416895342863990181.jpg",
+          "path": "c9edc36f-aec8-456b-b27f-40be416895342863990181.jpg",
+          "type": "Image"
+        },
+        {
+          "name": "Logo_fractalia7342661911147759.png",
+          "path": "Logo_fractalia7342661911147759.png",
+          "type": "Image"
+        },
+        {
+          "name": "logoBlanco_T.Tech44545944997279285.png",
+          "path": "logoBlanco_T.Tech44545944997279285.png",
+          "type": "Image"
+        },
+        {
+          "name": "logoBlanco_T.Tech8793978127295257.png",
+          "path": "logoBlanco_T.Tech8793978127295257.png",
+          "type": "Image"
+        }
+      ]
+    },
+    {
+      "name": "SharedResources",
+      "type": "SharedResources",
+      "items": [
+        {
+          "name": "CY21SU11",
+          "path": "BaseThemes/CY21SU11.json",
+          "type": "BaseTheme"
+        },
+        {
+          "name": "Temperature",
+          "path": "BuiltInThemes/Temperature.json",
+          "type": "CustomTheme"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "useStylableVisualContainerHeader": true,
+    "exportDataMode": "AllowSummarized",
+    "defaultDrillFilterOtherVisuals": true,
+    "allowChangeFilterTypes": true,
+    "useEnhancedTooltips": true
+  },
+  "slowDataSourceSettings": {
+    "isCrossHighlightingDisabled": false,
+    "isSlicerSelectionsButtonEnabled": false,
+    "isFilterSelectionsButtonEnabled": false,
+    "isFieldWellButtonEnabled": false,
+    "isApplyAllButtonEnabled": false
+  }
+}

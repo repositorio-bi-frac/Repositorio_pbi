@@ -1,0 +1,74 @@
+relationship 7f1cf7ec-dc76-5999-8e67-dece0ef24103
+	fromColumn: Data_Tickets.id_servicio
+	toColumn: Data_Servicio.id_servicio
+
+relationship 053881f6-8a75-5270-937c-9acb09aea548
+	fromColumn: Data_Tickets.id_severidad
+	toColumn: Data_Severidad.id_severidad
+
+relationship 885de9f4-56a7-58d7-91c1-874ed99955d8
+	fromColumn: Data_Tickets.id_estado
+	toColumn: Data_Status.id_estado
+
+relationship 830000fb-0d5e-52bc-9093-86c17ef9106a
+	fromColumn: Data_Tickets.id_tipo
+	toColumn: Data_Tipo_Ticket.id_tipo
+
+relationship 624b03c2-469c-5f1d-bcdc-058dcf75d32b
+	fromColumn: Data_Tickets.id_grupo_responsable
+	toColumn: Data_Grupo_Responsable.id_grupo_responsable
+
+relationship ba918b6a-db49-5416-9af5-07be0325abd7
+	fromColumn: Data_Tickets.id_resolutor
+	toColumn: Data_Resolutor.id_resolutor
+
+relationship 7fe6c2ee-f3b7-51af-9dcd-721f6cdb3aca
+	fromColumn: Data_Tickets.id_tecnico
+	toColumn: Data_Tecnico.id_tecnico
+
+relationship 5f592420-c0e2-58c7-8918-04789aa74912
+	fromColumn: Data_Tickets.fecha_creacion
+	toColumn: Data_Calendario.FECHA
+
+relationship 631b7601-8e9f-5154-81b1-bd24c218fcdf
+	isActive: false
+	fromColumn: Data_Tickets.fecha_resolucion
+	toColumn: Data_Calendario.FECHA
+
+relationship 70f8c7ad-9285-5aa5-bd8d-c4f233b999b7
+	fromColumn: Data_Tickets.hora_creacion
+	toColumn: Data_Horario.CLASIFICACION
+
+relationship 1284c2d1-5f67-57f8-84cc-9f7f1a56b20c
+	isActive: false
+	fromColumn: Data_Tickets.hora_resolucion
+	toColumn: Data_Horario.CLASIFICACION
+
+relationship 7da03e68-bba4-5843-ad04-12809306a8ab
+	fromColumn: Data_KPI_SLA.fecha
+	toColumn: Data_Calendario.FECHA
+
+relationship aaeb36b5-beaf-5d84-98f1-4f2daf8046bf
+	fromColumn: Data_KPI_SLA.id_servicio
+	toColumn: Data_Servicio.id_servicio
+
+relationship 9ca5f846-d80c-5b65-b8fa-2c5ffb73c962
+	fromColumn: Data_KPI_SLA.id_tipo
+	toColumn: Data_Tipo_Ticket.id_tipo
+
+relationship 07a3f1d7-5077-5e6a-9bbf-26eab1ed48a5
+	fromColumn: Data_KPI_SLA.id_kpi
+	toColumn: Data_KPI.id_kpi
+
+relationship 1200f06a-f242-5351-930c-75d6abcf7e32
+	fromColumn: Data_Llamadas.fecha_final
+	toColumn: Data_Calendario.FECHA
+
+relationship 464a3342-197c-50a0-bca1-5d3307a25260
+	fromColumn: Data_Llamadas.id_hora
+	toColumn: Data_Horario.CLASIFICACION
+
+relationship a612d503-1ba3-586a-b344-f35e33a638cf
+	fromColumn: Data_Llamadas.id_tecnico
+	toColumn: Data_Tecnico.id_tecnico
+

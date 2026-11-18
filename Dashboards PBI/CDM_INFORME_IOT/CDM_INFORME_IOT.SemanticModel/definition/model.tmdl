@@ -1,0 +1,36 @@
+model Model
+	culture: es-ES
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-ES
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+queryGroup Conexion
+
+	annotation PBI_QueryGroupOrder = 0
+
+annotation PBI_QueryOrder = ["Servidor_PostgreSQL","Base_Datos","Origen_IoT","Data_Calendario","Data_Horario","Data_Servicio","Data_Severidad","Data_Status","Data_Tipo_Ticket","Data_Grupo_Responsable","Data_Resolutor","Data_Tecnico","Data_KPI","Data_Tickets","Data_KPI_SLA","Data_Llamadas","Data_Measure"]
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table Data_Calendario
+ref table Data_Horario
+ref table Data_Servicio
+ref table Data_Severidad
+ref table Data_Status
+ref table Data_Tipo_Ticket
+ref table Data_Grupo_Responsable
+ref table Data_Resolutor
+ref table Data_Tecnico
+ref table Data_KPI
+ref table Data_Tickets
+ref table Data_KPI_SLA
+ref table Data_Llamadas
+ref table Data_Measure
+ref table Contraseña
+
+ref cultureInfo es-ES
+

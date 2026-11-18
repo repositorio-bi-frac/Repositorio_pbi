@@ -1,0 +1,26 @@
+table Contraseña
+	lineageTag: c209351f-6c53-5f67-8228-3a7cdcd26e67
+
+	measure 'Contraseña Value' = SELECTEDVALUE('Contraseña'[Contraseña])
+		formatString: 0
+		lineageTag: 4c5d8b56-11f1-552e-af3f-3df5babcf06e
+
+	column Contraseña
+		formatString: 0
+		lineageTag: 813537ed-01f1-5811-b9b5-fd8b9c51f4db
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+	partition Contraseña = calculated
+		mode: import
+		source = GENERATESERIES(1000, 1999, 1)
+
+	annotation PBI_Id = 0b2c47e5-1a18-52be-b4a9-652bb68d7333
+

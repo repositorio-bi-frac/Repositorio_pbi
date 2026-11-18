@@ -1,0 +1,70 @@
+/// dimension.tb_dim_kpi_iot (indicador + severidad con su objetivo).
+table Data_KPI
+	lineageTag: 0bbe34a6-827e-5a51-a21e-7b83628fbbe4
+
+	column id_kpi
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		lineageTag: 0235b500-ad27-5ff0-a602-72f2cf32abac
+		summarizeBy: none
+		sourceColumn: id_kpi
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_INDICADOR
+		dataType: int64
+		formatString: 0
+		lineageTag: 564d5780-faf7-5039-9601-84df9cee5176
+		summarizeBy: none
+		sourceColumn: id_indicador
+
+		annotation SummarizationSetBy = Automatic
+
+	column INDICADOR
+		dataType: string
+		lineageTag: 4d8214a7-7b00-5728-909b-02d486d36a35
+		summarizeBy: none
+		sourceColumn: indicador
+
+		annotation SummarizationSetBy = Automatic
+
+	column SEVERIDAD
+		dataType: string
+		lineageTag: e7ec94b7-eb8b-5037-b76c-b50e7859aa34
+		summarizeBy: none
+		sourceColumn: severidad
+
+		annotation SummarizationSetBy = Automatic
+
+	column OBJETIVO
+		dataType: string
+		lineageTag: ff91cb3a-ea0e-5be1-9af4-6ed55346e560
+		summarizeBy: none
+		sourceColumn: objetivo
+
+		annotation SummarizationSetBy = Automatic
+
+	column OBJETIVO_VALOR
+		dataType: double
+		formatString: 0.00
+		lineageTag: 66e9c300-7cd8-598f-a876-afdbc191d7f0
+		summarizeBy: none
+		sourceColumn: objetivo_valor
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_KPI = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="dimension",Item="tb_dim_kpi_iot"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"id_kpi", "id_indicador", "indicador", "severidad", "objetivo", "objetivo_valor"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_kpi", Int64.Type}, {"id_indicador", Int64.Type}, {"indicador", type text}, {"severidad", type text}, {"objetivo", type text}, {"objetivo_valor", type number}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

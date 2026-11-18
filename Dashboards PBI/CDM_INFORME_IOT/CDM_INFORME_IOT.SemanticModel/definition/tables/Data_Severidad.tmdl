@@ -1,0 +1,65 @@
+/// dimension.tb_dim_severidad_iot
+table Data_Severidad
+	lineageTag: 6bf71625-a4f6-558f-82f2-9b1d7fa0ba44
+
+	column id_severidad
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		lineageTag: 3cee5745-be38-5a08-bf4d-d296514279f9
+		summarizeBy: none
+		sourceColumn: id_severidad
+
+		annotation SummarizationSetBy = Automatic
+
+	column SEVERITY
+		dataType: string
+		lineageTag: 6d66b707-c57c-578f-9681-737dc951fa80
+		summarizeBy: none
+		sourceColumn: severidad
+		sortByColumn: ORDEN
+
+		annotation SummarizationSetBy = Automatic
+
+	column ORDEN
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 56692c97-78ef-549c-ace8-b020ff2c62c0
+		summarizeBy: none
+		sourceColumn: orden
+
+		annotation SummarizationSetBy = Automatic
+
+	column UMBRAL_RESPUESTA_S
+		dataType: int64
+		formatString: 0
+		lineageTag: 12d38a84-0e51-5efc-a2a5-bbb6ad36327e
+		summarizeBy: none
+		sourceColumn: umbral_respuesta_s
+
+		annotation SummarizationSetBy = Automatic
+
+	column ES_KPI_SLA
+		dataType: int64
+		formatString: 0
+		lineageTag: d27a9eb4-df3b-51e9-8c60-0b37d0efa2a3
+		summarizeBy: none
+		sourceColumn: es_kpi_sla
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Severidad = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="dimension",Item="tb_dim_severidad_iot"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"id_severidad", "severidad", "orden", "umbral_respuesta_s", "es_kpi_sla"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_severidad", Int64.Type}, {"severidad", type text}, {"orden", Int64.Type}, {"umbral_respuesta_s", Int64.Type}, {"es_kpi_sla", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

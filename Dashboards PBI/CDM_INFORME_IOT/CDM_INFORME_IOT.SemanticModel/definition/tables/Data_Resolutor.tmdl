@@ -1,0 +1,96 @@
+/// dimension.tb_dim_resolutor_iot. GRUPO_CERRADOS = RESOLUTOR_GRUPO de los tickets resueltos; GRUPO_ABIERTOS = el de los abiertos.
+table Data_Resolutor
+	lineageTag: d3d410b1-28e2-5420-9b93-0b5df9e7be71
+
+	column id_resolutor
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		lineageTag: 00e64e3b-7e18-5b77-80ef-1dafbdf7ff86
+		summarizeBy: none
+		sourceColumn: id_resolutor
+
+		annotation SummarizationSetBy = Automatic
+
+	column RESOLUTOR
+		dataType: string
+		lineageTag: 6a1a2d63-3110-572c-ba7e-3ae91138107f
+		summarizeBy: none
+		sourceColumn: resolutor_reporte
+
+		annotation SummarizationSetBy = Automatic
+
+	column RESOLUTOR_ORIGEN
+		dataType: string
+		lineageTag: a0914c7e-35c2-56cb-9a66-ecb35d89ae39
+		summarizeBy: none
+		sourceColumn: resolutor
+
+		annotation SummarizationSetBy = Automatic
+
+	column GRUPO_ABIERTOS
+		dataType: string
+		lineageTag: c4bbb12f-95c8-5e5d-ab1b-76f5bfa1ed21
+		summarizeBy: none
+		sourceColumn: grupo_abiertos
+
+		annotation SummarizationSetBy = Automatic
+
+	column GRUPO_CERRADOS
+		dataType: string
+		lineageTag: 2761e310-c70b-5705-9785-78308bc274f9
+		summarizeBy: none
+		sourceColumn: grupo_cerrados
+
+		annotation SummarizationSetBy = Automatic
+
+	column ES_RESTO
+		dataType: int64
+		formatString: 0
+		lineageTag: 8de1d7f4-9018-5713-bef6-bc11b2b9d1ad
+		summarizeBy: none
+		sourceColumn: es_resto
+
+		annotation SummarizationSetBy = Automatic
+
+	column ES_DSN_N1
+		dataType: int64
+		formatString: 0
+		lineageTag: e2df008e-f0c7-5ad1-97e3-6267994291c2
+		summarizeBy: none
+		sourceColumn: es_dsn_n1
+
+		annotation SummarizationSetBy = Automatic
+
+	column ES_DSN_REDES
+		dataType: int64
+		formatString: 0
+		lineageTag: 1fd1fade-506a-568a-8f87-5b894c800528
+		summarizeBy: none
+		sourceColumn: es_dsn_redes
+
+		annotation SummarizationSetBy = Automatic
+
+	column ES_DSN_SISTEMAS
+		dataType: int64
+		formatString: 0
+		lineageTag: 6cf3ad9e-ff6e-5573-9ce5-e4feac7639cc
+		summarizeBy: none
+		sourceColumn: es_dsn_sistemas
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Resolutor = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="dimension",Item="tb_dim_resolutor_iot"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"id_resolutor", "resolutor_reporte", "resolutor", "grupo_abiertos", "grupo_cerrados", "es_resto", "es_dsn_n1", "es_dsn_redes", "es_dsn_sistemas"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_resolutor", Int64.Type}, {"resolutor_reporte", type text}, {"resolutor", type text}, {"grupo_abiertos", type text}, {"grupo_cerrados", type text}, {"es_resto", Int64.Type}, {"es_dsn_n1", Int64.Type}, {"es_dsn_redes", Int64.Type}, {"es_dsn_sistemas", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,44 @@
+/// dimension.tb_dim_hora (Data_Horario del PBIX original).
+table Data_Horario
+	lineageTag: b12f75c9-194d-5887-b4ce-ced7e42c6d6b
+
+	column CLASIFICACION
+		dataType: int64
+		isKey
+		formatString: 0
+		lineageTag: 007c2f76-8718-5a22-8f33-215071bb6eec
+		summarizeBy: none
+		sourceColumn: id_hora
+
+		annotation SummarizationSetBy = Automatic
+
+	column RANGO_HORA
+		dataType: string
+		lineageTag: 762f4c14-ee03-5f4a-8043-4dc233b78574
+		summarizeBy: none
+		sourceColumn: rango_hora
+
+		annotation SummarizationSetBy = Automatic
+
+	column RANGO_HORA2
+		dataType: string
+		lineageTag: 758347b8-0047-58d2-98bf-d08732d1a53a
+		summarizeBy: none
+		sourceColumn: rango_hora_corto
+		sortByColumn: CLASIFICACION
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Data_Horario = m
+		mode: import
+		source =
+				let
+				    Origen = Origen_IoT,
+				    Tabla = Origen{[Schema="dimension",Item="tb_dim_hora"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"id_hora", "rango_hora", "rango_hora_corto"}),
+				    Tipos = Table.TransformColumnTypes(Columnas, {{"id_hora", Int64.Type}, {"rango_hora", type text}, {"rango_hora_corto", type text}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

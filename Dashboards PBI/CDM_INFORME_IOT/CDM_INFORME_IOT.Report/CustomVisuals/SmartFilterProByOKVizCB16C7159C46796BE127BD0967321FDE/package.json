@@ -1,0 +1,28 @@
+{
+  "version": "2.3.0.0",
+  "author": {
+    "name": "OKVIZ - a trademark of OKVIZ corp.",
+    "email": "support@okviz.com"
+  },
+  "resources": [
+    {
+      "resourceId": "rId0",
+      "sourceType": 5,
+      "file": "resources/SmartFilterProByOKVizCB16C7159C46796BE127BD0967321FDE.pbiviz.json"
+    }
+  ],
+  "visual": {
+    "guid": "SmartFilterProByOKVizCB16C7159C46796BE127BD0967321FDE",
+    "name": "smartFilterProByOKViz",
+    "displayName": "Smart Filter Pro by OKVIZ",
+    "version": "2.3.0.0",
+    "description": "Smart Filter Pro by OKVIZ is the premium version of Smart Filter.",
+    "supportUrl": "https://okviz.com/smart-filter-pro/",
+    "visualClassName": "Visual"
+  },
+  "metadata": {
+    "pbivizjson": {
+      "resourceId": "rId0"
+    }
+  }
+}

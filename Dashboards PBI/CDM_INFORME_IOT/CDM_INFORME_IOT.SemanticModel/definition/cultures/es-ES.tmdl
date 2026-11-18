@@ -1,0 +1,1037 @@
+cultureInfo es-ES
+
+	linguisticMetadata =
+			{
+			  "Version": "2.0.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "data_measure.status": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "Status"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Status": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.volumetria_tickets_abiertos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Volumetria_Tickets_Abiertos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tickets Abiertos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.proactividad": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Proactividad"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tickets Proactivos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.reactividad": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Reactividad"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tickets Reactivos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.proactividad_critical": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Proactividad_Critical"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Critical": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.proactividad_major": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Proactividad_Major"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Major": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.proactividad_minor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Proactividad_Minor"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Minor": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.proactividad_slight": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Proactividad_Slight"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Slight": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.reactividad_critical": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Reactividad_Critical"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Critical": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.reactividad_major": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Reactividad_Major"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Major": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.reactividad_minor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Reactividad_Minor"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Minor": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.reactividad_slight": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Reactividad_Slight"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Slight": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.volumetria_tickets_resueltos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Volumetria_Tickets_Resueltos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tickets Resueltos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Tickets Solved": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Resueltos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.participacion_n1_graph": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Participacion_N1_Graph"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "N1": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.participacion_resto_graph": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Participacion_Resto_Graph"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Resto": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.volumetria_tickets_gestionados_n1": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Volumetria_Tickets_Gestionados_N1"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tickets Solucionados N1": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.llamadas_recibidas": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Llamadas_Recibidas"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Recibidas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Llamadas Recibidas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.nda_graph": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#NDA_Graph"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Nivel de Atención": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.tme_entrante": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#TME_Entrante"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tiempo Medio de Respuesta": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.tma_entrante": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#TMA_Entrante"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tiempo Medio de Atención": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.llamadas_atendidas": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Llamadas_Atendidas"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Llamadas Atendidas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.llamadas_escapadas": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Llamadas_Escapadas"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Llamadas Escapadas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.llamadas_abandonadas": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Llamadas_Abandonadas"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Llamadas Abandonadas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.nda": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#NDA"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Nivel de Atención": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_detecciontemprana_critica": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_DeteccionTemprana_Critica"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Detección Temprana (Críticas)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_detecciontemprana_major": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_DeteccionTemprana_Major"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Detección Temprana (Major)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_detecciontemprana_minor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_DeteccionTemprana_Minor"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Detección Temprana (Minor)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_tiempoatencion_critica": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_TiempoAtencion_Critica"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tiempo de Atención (Criticas)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_tiempoatencion_major": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_TiempoAtencion_Major"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tiempo de Atención (Major)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_tiempoatencion_minor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_TiempoAtencion_Minor"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tiempo de Atención (Minor)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_ticketsrestauradosn1_critica": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_TicketsRestauradosN1_Critica"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tickets Restaurados N1 (Críticas)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_ticketsrestauradosn1_major": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_TicketsRestauradosN1_Major"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tickets Restaurados N1 (Major)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_ticketsrestauradosn1_minor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_TicketsRestauradosN1_Minor"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tickets Restaurados N1 (Minor)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.kpi_informacionactualizada_udo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#KPI_InformacionActualizada_UDO"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Información Actualizada de los UDOs": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_measure.mayor_notificable": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Measure",
+			          "ConceptualProperty": "#Mayor_Notificable"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Notificados": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_resolutor.grupo_cerrados": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Resolutor",
+			          "ConceptualProperty": "GRUPO_CERRADOS"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Resolutor": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_tipo_ticket.type": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Tipo_Ticket",
+			          "ConceptualProperty": "TYPE"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tipo de Ticket": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_servicio.service": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Servicio",
+			          "ConceptualProperty": "SERVICE"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Servicio": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_severidad.severity": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Severidad",
+			          "ConceptualProperty": "SEVERITY"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Severidad": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_horario.rango_hora2": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Horario",
+			          "ConceptualProperty": "RANGO_HORA2"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Rango Horario": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Hora": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_calendario.dia_nombre": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Calendario",
+			          "ConceptualProperty": "DIA_NOMBRE"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Día": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_status.status": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Status",
+			          "ConceptualProperty": "STATUS"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Status": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_tickets.k_deteccion_temprana": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Tickets",
+			          "ConceptualProperty": "K_DETECCION_TEMPRANA"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "DETECCION TEMPRANA": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Cumplimiento Detección Temprana": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_tickets.k_tiempo_medio_atencion": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Tickets",
+			          "ConceptualProperty": "K_TIEMPO_MEDIO_ATENCION"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "TIEMPO ATENCION": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Cumplimiento Tiempo de Atención": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_tickets.k_udo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Tickets",
+			          "ConceptualProperty": "K_UDO"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Actualización UDOs": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "data_tickets.k_tickets_restaurados": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Data_Tickets",
+			          "ConceptualProperty": "K_TICKETS_RESTAURADOS"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Restaurados N1": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    }
+			  }
+			}
+		contentType: json
+
